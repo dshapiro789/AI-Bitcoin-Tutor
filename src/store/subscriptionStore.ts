@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuthStore } from './authStore';
 
 export type SubscriptionTier = 'free' | 'premium';
-export type SubscriptionStatus = 'active' | 'canceled' | 'expired' | 'none';
+export type SubscriptionStatus = 'active' | 'canceled' | 'expired' | 'none' | 'active_until_period_end';
 
 interface Subscription {
   tier: SubscriptionTier;
@@ -13,6 +13,7 @@ interface Subscription {
   stripeCustomerId?: string;
   stripePriceId?: string;
   stripeSubscriptionId?: string;
+  cancelAtPeriodEnd?: boolean;
 }
 
 interface SubscriptionState {
@@ -23,6 +24,7 @@ interface SubscriptionState {
   loadSubscription: () => Promise<void>;
   createSubscription: (priceId: string, customerId: string) => Promise<void>;
   cancelSubscription: () => Promise<void>;
+  createCustomerPortalSession: () => Promise<string>;
 }
 
 const PREMIUM_FEATURES = [
@@ -53,6 +55,14 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
 
     // Premium features require active subscription
     const { subscription } = get();
+    
+    // If subscription is set to cancel at period end, check if we're still within the period
+    if (subscription?.cancelAtPeriodEnd && subscription?.endDate) {
+      const now = new Date();
+      const endDate = new Date(subscription.endDate);
+      return now < endDate && (subscription.status === 'active' || subscription.status === 'active_until_period_end');
+    }
+    
     return subscription?.status === 'active' && subscription?.tier === 'premium';
   },
 
@@ -90,7 +100,16 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       }
 
       set({ 
-        subscription: data || { 
+        subscription: data ? {
+          tier: data.tier,
+          status: data.status,
+          startDate: data.start_date,
+          endDate: data.end_date,
+          stripeCustomerId: data.stripe_customer_id,
+          stripePriceId: data.stripe_price_id,
+          stripeSubscriptionId: data.stripe_subscription_id,
+          cancelAtPeriodEnd: data.cancel_at_period_end
+        } : { 
           tier: 'free', 
           status: 'none',
           startDate: new Date().toISOString()
@@ -142,22 +161,67 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({
-          status: 'canceled',
-          end_date: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
+      const { subscription } = get();
+      if (!subscription?.stripeSubscriptionId) {
+        throw new Error('No active subscription found');
+      }
 
-      if (error) throw error;
+      // Call the edge function to cancel subscription at period end
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cancel-subscription-at-period-end`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          stripeSubscriptionId: subscription.stripeSubscriptionId,
+          userId: user.id,
+        }),
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to cancel subscription');
+      }
+
+      // Reload subscription data to reflect the changes
       await get().loadSubscription();
     } catch (err) {
       set({ error: err instanceof Error ? err.message : 'Failed to cancel subscription' });
       console.error('Error canceling subscription:', err);
+      throw err;
     } finally {
       set({ loading: false });
+    }
+  },
+
+  createCustomerPortalSession: async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-customer-portal-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          returnUrl: `${window.location.origin}/account`
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create customer portal session');
+      }
+
+      const { url } = await response.json();
+      return url;
+    } catch (err) {
+      console.error('Error creating customer portal session:', err);
+      throw err;
     }
   }
 }));

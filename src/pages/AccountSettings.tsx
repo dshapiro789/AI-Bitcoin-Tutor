@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   CreditCard, User, Key, Crown, CheckCircle, 
-  Calendar, AlertTriangle, ArrowRight, X
+  Calendar, AlertTriangle, ArrowRight, X, ExternalLink,
+  Receipt, Clock, Shield
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
@@ -11,7 +12,7 @@ import { motion } from 'framer-motion';
 function AccountSettings() {
   const navigate = useNavigate();
   const { user, signOut } = useAuthStore();
-  const { subscription, cancelSubscription } = useSubscriptionStore();
+  const { subscription, cancelSubscription, createCustomerPortalSession } = useSubscriptionStore();
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,22 @@ function AccountSettings() {
       setLoading(false);
     }
   };
+
+  const handleBillingHistory = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const portalUrl = await createCustomerPortalSession();
+      window.open(portalUrl, '_blank');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to open billing portal');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
+  const isActiveUntilPeriodEnd = subscription?.status === 'active_until_period_end' || subscription?.cancelAtPeriodEnd;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -88,24 +105,62 @@ function AccountSettings() {
                       <Crown className="h-6 w-6 text-orange-500 mr-2" />
                       <div>
                         <h3 className="font-medium text-gray-900">Premium Subscription</h3>
-                        <p className="text-sm text-gray-500">Active</p>
+                        <p className={`text-sm ${
+                          isActiveUntilPeriodEnd ? 'text-amber-600' : 'text-green-600'
+                        }`}>
+                          {isActiveUntilPeriodEnd ? 'Active until period end' : 'Active'}
+                        </p>
                       </div>
                     </div>
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    {isActiveUntilPeriodEnd ? (
+                      <div className="flex items-center text-amber-600">
+                        <Clock className="h-5 w-5 mr-1" />
+                        <span className="text-sm font-medium">Canceling</span>
+                      </div>
+                    ) : (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    )}
                   </div>
 
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Next billing date: {new Date(subscription.endDate || '').toLocaleDateString()}
-                  </div>
+                  {subscription.endDate && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      {isActiveUntilPeriodEnd ? 'Expires on: ' : 'Next billing date: '}
+                      {new Date(subscription.endDate).toLocaleDateString()}
+                    </div>
+                  )}
 
-                  <div className="pt-4 border-t">
-                    <button
-                      onClick={() => setShowCancelConfirm(true)}
-                      className="text-red-600 hover:text-red-700 font-medium"
-                    >
-                      Cancel Subscription
-                    </button>
+                  {isActiveUntilPeriodEnd && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div className="flex items-center text-amber-800">
+                        <AlertTriangle className="h-4 w-4 mr-2" />
+                        <span className="text-sm font-medium">Subscription Canceling</span>
+                      </div>
+                      <p className="text-sm text-amber-700 mt-1">
+                        Your subscription will remain active until {new Date(subscription.endDate || '').toLocaleDateString()}. 
+                        You can reactivate anytime before then.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t space-y-3">
+                    {!isActiveUntilPeriodEnd && (
+                      <button
+                        onClick={() => setShowCancelConfirm(true)}
+                        className="text-red-600 hover:text-red-700 font-medium"
+                      >
+                        Cancel Subscription
+                      </button>
+                    )}
+                    
+                    {isActiveUntilPeriodEnd && (
+                      <button
+                        onClick={() => navigate('/subscription')}
+                        className="text-orange-600 hover:text-orange-700 font-medium"
+                      >
+                        Reactivate Subscription
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -129,6 +184,43 @@ function AccountSettings() {
             </div>
           </div>
 
+          {/* Billing History */}
+          {subscription?.tier === 'premium' && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <Receipt className="h-5 w-5 mr-2" />
+                Billing History
+              </h2>
+              <div className="bg-gray-50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">Payment Records</h3>
+                    <p className="text-gray-600 text-sm">
+                      View your payment history, download invoices, and update payment methods.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleBillingHistory}
+                    disabled={loading}
+                    className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    ) : (
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                    )}
+                    View Billing Portal
+                  </button>
+                </div>
+                
+                <div className="mt-4 flex items-center text-sm text-gray-500">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Secure billing portal powered by Stripe
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Password Management */}
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -147,6 +239,16 @@ function AccountSettings() {
               </button>
             </div>
           </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+              <div className="flex items-center">
+                <AlertTriangle className="h-5 w-5 mr-2" />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -171,25 +273,22 @@ function AccountSettings() {
             <div className="mb-6">
               <div className="flex items-center mb-4 text-amber-600">
                 <AlertTriangle className="h-5 w-5 mr-2" />
-                <span className="font-medium">Warning</span>
+                <span className="font-medium">Important Information</span>
               </div>
-              <p className="text-gray-600">
-                Are you sure you want to cancel your premium subscription? You'll lose access to:
+              <p className="text-gray-600 mb-4">
+                Your subscription will be canceled at the end of your current billing period. You'll continue to have access to premium features until:
               </p>
-              <ul className="mt-4 space-y-2">
-                <li className="flex items-center text-gray-600">
-                  <Crown className="h-4 w-4 mr-2 text-orange-500" />
-                  Premium courses and content
-                </li>
-                <li className="flex items-center text-gray-600">
-                  <Crown className="h-4 w-4 mr-2 text-orange-500" />
-                  Unlimited AI chat access
-                </li>
-                <li className="flex items-center text-gray-600">
-                  <Crown className="h-4 w-4 mr-2 text-orange-500" />
-                  Advanced development tools
-                </li>
-              </ul>
+              <div className="bg-orange-50 p-3 rounded-lg mb-4">
+                <div className="flex items-center text-orange-800">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <span className="font-medium">
+                    {subscription?.endDate ? new Date(subscription.endDate).toLocaleDateString() : 'End of billing period'}
+                  </span>
+                </div>
+              </div>
+              <p className="text-gray-600 text-sm">
+                You can reactivate your subscription anytime before it expires.
+              </p>
             </div>
 
             {error && (
@@ -215,7 +314,7 @@ function AccountSettings() {
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : (
-                  'Cancel Subscription'
+                  'Cancel at Period End'
                 )}
               </button>
             </div>

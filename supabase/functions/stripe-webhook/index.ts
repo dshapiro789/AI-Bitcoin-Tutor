@@ -193,6 +193,7 @@ async function handleSubscriptionDeleted(subscription: any, supabase: any) {
     .update({
       status: 'canceled',
       end_date: new Date().toISOString(),
+      cancel_at_period_end: false,
       updated_at: new Date().toISOString()
     })
     .eq('stripe_subscription_id', subscription.id)
@@ -246,15 +247,22 @@ async function handlePaymentFailed(invoice: any, supabase: any) {
 
 // Create or update subscription in database
 async function createOrUpdateSubscription(subscription: any, userId: string, supabase: any) {
+  // Determine status based on Stripe subscription state
+  let status = subscription.status
+  if (subscription.cancel_at_period_end && subscription.status === 'active') {
+    status = 'active_until_period_end'
+  }
+
   const subscriptionData = {
     user_id: userId,
     tier: 'premium',
-    status: subscription.status,
+    status: status,
     start_date: new Date(subscription.created * 1000).toISOString(),
     end_date: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
     stripe_customer_id: subscription.customer,
     stripe_price_id: subscription.items.data[0]?.price?.id,
     stripe_subscription_id: subscription.id,
+    cancel_at_period_end: subscription.cancel_at_period_end || false,
     updated_at: new Date().toISOString()
   }
 
