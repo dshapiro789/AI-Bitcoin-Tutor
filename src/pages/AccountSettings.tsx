@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   CreditCard, User, Key, Crown, CheckCircle, 
   Calendar, AlertTriangle, ArrowRight, X, ExternalLink,
-  Receipt, Clock, Shield
+  Receipt, Clock, Shield, Mail
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
@@ -37,7 +37,13 @@ function AccountSettings() {
       const portalUrl = await createCustomerPortalSession();
       window.open(portalUrl, '_blank');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to open billing portal');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to open billing portal';
+      setError(errorMessage);
+      
+      // If it's a configuration error, show a more helpful message
+      if (errorMessage.includes('temporarily unavailable')) {
+        setError('The billing portal is currently being set up. Please contact support at support@aibitcointutor.com for assistance with your subscription.');
+      }
     } finally {
       setLoading(false);
     }
@@ -217,6 +223,18 @@ function AccountSettings() {
                   <Shield className="h-4 w-4 mr-2" />
                   Secure billing portal powered by Stripe
                 </div>
+
+                {/* Alternative contact method if billing portal is unavailable */}
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center text-blue-800 mb-1">
+                    <Mail className="h-4 w-4 mr-2" />
+                    <span className="text-sm font-medium">Need Help?</span>
+                  </div>
+                  <p className="text-sm text-blue-700">
+                    If you need assistance with billing or have questions about your subscription, 
+                    contact us at <a href="mailto:support@aibitcointutor.com" className="underline">support@aibitcointutor.com</a>
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -243,9 +261,19 @@ function AccountSettings() {
           {/* Error Display */}
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-              <div className="flex items-center">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                <span>{error}</span>
+              <div className="flex items-start">
+                <AlertTriangle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                <div>
+                  <span className="block">{error}</span>
+                  {error.includes('contact support') && (
+                    <a 
+                      href="mailto:support@aibitcointutor.com" 
+                      className="text-red-600 underline hover:text-red-800 text-sm mt-1 inline-block"
+                    >
+                      Contact Support →
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           )}

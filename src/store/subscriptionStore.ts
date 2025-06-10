@@ -214,6 +214,12 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Check if this is a Stripe configuration error
+        if (errorData.error && errorData.error.includes('No configuration provided')) {
+          throw new Error('Billing portal is temporarily unavailable. Please contact support for assistance with your subscription.');
+        }
+        
         throw new Error(errorData.error || 'Failed to create customer portal session');
       }
 
