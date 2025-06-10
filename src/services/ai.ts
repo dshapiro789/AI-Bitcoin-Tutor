@@ -62,13 +62,13 @@ const SYSTEM_PROMPT = `You are an **expert, patient, and helpful AI Bitcoin Tuto
 
 Remember: You are here to educate about Bitcoin specifically. Stay focused, be helpful, and always encourage learning and understanding of Bitcoin's revolutionary potential.`;
 
-// Default model configurations - now only includes DeepSeek V3
+// Default model configurations - DeepSeek V3 with environment API key
 export const defaultModels: AIModel[] = [
   {
     id: 'deepseek/deepseek-chat-v3-0324:free',
     name: 'DeepSeek V3',
     provider: 'OpenRouter',
-    apiKeyRequired: false,
+    apiKeyRequired: false, // API key comes from environment
     apiEndpoint: 'https://openrouter.ai/api/v1',
     apiKey: import.meta.env.VITE_OPENROUTER_DEEPSEEK_KEY,
     active: true,
@@ -98,7 +98,10 @@ export class AIService {
       throw new Error('No model selected');
     }
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    // Use the appropriate endpoint based on the model
+    const endpoint = this.currentModel.apiEndpoint || 'https://openrouter.ai/api/v1';
+    
+    const response = await fetch(`${endpoint}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

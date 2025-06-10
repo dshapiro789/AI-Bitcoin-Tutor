@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bot, Clock, Copy, CheckCircle, MessageSquare,
   AlertCircle
@@ -54,6 +54,7 @@ export function ChatMessage({
   onQuickReply
 }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
   const CategoryIcon = category ? categoryIcons[category] : null;
 
   const handleCopy = async (textToCopy: string) => {
@@ -69,6 +70,99 @@ export function ChatMessage({
   const formatText = (inputText: string) => {
     return marked.parse(inputText);
   };
+
+  // Add copy buttons to code blocks
+  useEffect(() => {
+    if (!contentRef.current || isUser) return;
+
+    const codeBlocks = contentRef.current.querySelectorAll('pre code');
+    const addedButtons: HTMLButtonElement[] = [];
+
+    codeBlocks.forEach((codeElement) => {
+      const preElement = codeElement.parentElement as HTMLPreElement;
+      if (!preElement) return;
+
+      // Set up the pre element for positioning
+      preElement.style.position = 'relative';
+      preElement.classList.add('group');
+
+      // Create copy button
+      const copyButton = document.createElement('button');
+      copyButton.className = 'absolute top-2 right-2 p-1.5 rounded-md bg-gray-700 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-600 flex items-center space-x-1';
+      copyButton.title = 'Copy code';
+
+      // Create copy icon SVG
+      const copyIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      copyIcon.setAttribute('width', '14');
+      copyIcon.setAttribute('height', '14');
+      copyIcon.setAttribute('viewBox', '0 0 24 24');
+      copyIcon.setAttribute('fill', 'none');
+      copyIcon.setAttribute('stroke', 'currentColor');
+      copyIcon.setAttribute('stroke-width', '2');
+      copyIcon.setAttribute('stroke-linecap', 'round');
+      copyIcon.setAttribute('stroke-linejoin', 'round');
+      copyIcon.innerHTML = '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="m4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>';
+
+      // Create check icon SVG
+      const checkIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      checkIcon.setAttribute('width', '14');
+      checkIcon.setAttribute('height', '14');
+      checkIcon.setAttribute('viewBox', '0 0 24 24');
+      checkIcon.setAttribute('fill', 'none');
+      checkIcon.setAttribute('stroke', 'currentColor');
+      checkIcon.setAttribute('stroke-width', '2');
+      checkIcon.setAttribute('stroke-linecap', 'round');
+      checkIcon.setAttribute('stroke-linejoin', 'round');
+      checkIcon.innerHTML = '<path d="M20 6 9 17l-5-5"/>';
+      checkIcon.style.display = 'none';
+
+      copyButton.appendChild(copyIcon);
+      copyButton.appendChild(checkIcon);
+
+      // Add click handler
+      copyButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        try {
+          const codeText = codeElement.textContent || '';
+          await navigator.clipboard.writeText(codeText);
+          
+          // Show success state
+          copyIcon.style.display = 'none';
+          checkIcon.style.display = 'block';
+          copyButton.title = 'Copied!';
+          copyButton.classList.add('bg-green-600');
+          copyButton.classList.remove('bg-gray-700');
+          
+          // Reset after 2 seconds
+          setTimeout(() => {
+            copyIcon.style.display = 'block';
+            checkIcon.style.display = 'none';
+            copyButton.title = 'Copy code';
+            copyButton.classList.remove('bg-green-600');
+            copyButton.classList.add('bg-gray-700');
+          }, 2000);
+        } catch (error) {
+          console.error('Failed to copy code:', error);
+        }
+      });
+
+      preElement.appendChild(copyButton);
+      addedButtons.push(copyButton);
+    });
+
+    // Cleanup function
+    return () => {
+      addedButtons.forEach(button => {
+        if (button.parentElement) {
+          button.parentElement.removeChild(button);
+          button.parentElement.style.position = '';
+          button.parentElement.classList.remove('group');
+        }
+      });
+    };
+  }, [text, id, isUser]);
 
   return (
     <motion.div
@@ -105,6 +199,7 @@ export function ChatMessage({
 
         {/* Message Content */}
         <div 
+          ref={contentRef}
           className={`prose prose-lg break-words ${
             isUser 
               ? 'prose-invert text-white' 
