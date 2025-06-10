@@ -9,28 +9,23 @@ const plans = [
   {
     id: 'monthly',
     name: 'Monthly',
-    price: 29.99,
+    price: 10.00,
     stripePriceId: 'price_monthly',
     interval: 'month',
     features: [
-      'Access to AI Chatbot',
-      'Node Simulator',
-      'Wallet Simulator',
-      'Development Tools',
-      'Premium Courses',
+      'Unlimited Access to AI Chatbot',
       'Early Access to New Features'
     ]
   },
   {
     id: 'annual',
     name: 'Annual',
-    price: 299.99,
+    price: 80.00,
     stripePriceId: 'price_annual',
     interval: 'year',
     features: [
       'All Monthly Features',
-      '2 Months Free',
-      'Early Access to New Features'
+      '2 Months Free'
     ]
   }
 ];
