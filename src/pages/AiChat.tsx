@@ -30,7 +30,8 @@ function AiChat() {
     clearChatHistory,
     exportChatHistory,
     saveUserModelSettings,
-    addCustomModel
+    addCustomModel,
+    deleteCustomModel
   } = useAIChat();
   
   const [input, setInput] = useState('');
@@ -43,6 +44,8 @@ function AiChat() {
   const [messageFilter, setMessageFilter] = useState<string>('all');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showAddModel, setShowAddModel] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [modelToDelete, setModelToDelete] = useState<string | null>(null);
   
   // New model form state
   const [newModelId, setNewModelId] = useState('');
@@ -157,6 +160,25 @@ function AiChat() {
     }
   };
 
+  const handleDeleteModel = (modelId: string) => {
+    setModelToDelete(modelId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteModel = async () => {
+    if (!modelToDelete) return;
+
+    try {
+      await deleteCustomModel(modelToDelete);
+      setShowDeleteConfirm(false);
+      setModelToDelete(null);
+      setError('Model deleted successfully!');
+      setTimeout(() => setError(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete model');
+    }
+  };
+
   const handleSaveModelSettings = async () => {
     if (!user) {
       setError('Please sign in to save model settings');
@@ -249,6 +271,11 @@ function AiChat() {
       return "Processing your message...";
     }
     return isPremium ? "Ask anything about Bitcoin..." : "Ask anything about Bitcoin (voice input available)";
+  };
+
+  // Check if a model is the default model (cannot be deleted)
+  const isDefaultModel = (modelId: string) => {
+    return modelId === 'deepseek/deepseek-chat-v3-0324:free';
   };
 
   return (
@@ -500,16 +527,28 @@ function AiChat() {
                       </div>
                       <p className="text-sm text-gray-500">{model.provider}</p>
                     </div>
-                    <button
-                      onClick={() => updateModel(model.id, { ...model, active: true })}
-                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] ${
-                        model.active
-                          ? 'bg-gray-900 text-white hover:bg-gray-800'
-                          : 'bg-gray-900 text-white hover:bg-gray-800'
-                      }`}
-                    >
-                      {model.active ? 'Active' : 'Use Model'}
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => updateModel(model.id, { ...model, active: true })}
+                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] ${
+                          model.active
+                            ? 'bg-gray-900 text-white hover:bg-gray-800'
+                            : 'bg-gray-900 text-white hover:bg-gray-800'
+                        }`}
+                      >
+                        {model.active ? 'Active' : 'Use Model'}
+                      </button>
+                      {/* Delete button - only show for non-default models */}
+                      {!isDefaultModel(model.id) && user && (
+                        <button
+                          onClick={() => handleDeleteModel(model.id)}
+                          className="p-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                          title="Delete model"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Advanced Settings */}
@@ -918,6 +957,63 @@ function AiChat() {
                 className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
               >
                 Clear History
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Delete Model Confirmation Modal */}
+      {showDeleteConfirm && modelToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl p-6 max-w-md w-full"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-gray-900">Delete Model</h3>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setModelToDelete(null);
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <div className="flex items-center mb-4 text-amber-600">
+                <AlertTriangle className="h-5 w-5 mr-2" />
+                <span className="font-medium">Warning</span>
+              </div>
+              <p className="text-gray-600">
+                Are you sure you want to delete this custom model? This action cannot be undone.
+              </p>
+              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <strong>Model:</strong> {models.find(m => m.id === modelToDelete)?.name}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setModelToDelete(null);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteModel}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              >
+                Delete Model
               </button>
             </div>
           </motion.div>

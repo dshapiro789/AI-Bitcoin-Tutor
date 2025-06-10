@@ -116,7 +116,10 @@ export function useAIChat() {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        const userModels: AIModel[] = data.map(model => ({
+        // Filter out Gemma models to prevent them from appearing
+        const filteredData = data.filter(model => model.model_id !== 'gemma-2b-it');
+        
+        const userModels: AIModel[] = filteredData.map(model => ({
           id: model.model_id,
           name: model.name,
           provider: model.provider,
@@ -219,6 +222,40 @@ export function useAIChat() {
       await saveUserModelSettings(model);
     } catch (err) {
       console.error('Error adding custom model:', err);
+      throw err;
+    }
+  };
+
+  const deleteCustomModel = async (modelId: string) => {
+    if (!user) return;
+
+    try {
+      // Check if this is the default model (DeepSeek V3)
+      const isDefaultModel = defaultModels.some(m => m.id === modelId);
+      if (isDefaultModel) {
+        throw new Error('Cannot delete the default model');
+      }
+
+      // Remove from local state
+      setModels(prev => prev.filter(m => m.id !== modelId));
+      
+      // Remove from database
+      const { error } = await supabase
+        .from('user_models')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('model_id', modelId);
+
+      if (error) throw error;
+
+      // If the deleted model was active, set the default model as active
+      const deletedModel = models.find(m => m.id === modelId);
+      if (deletedModel?.active) {
+        const defaultModel = defaultModels[0];
+        updateModel(defaultModel.id, { active: true });
+      }
+    } catch (err) {
+      console.error('Error deleting custom model:', err);
       throw err;
     }
   };
@@ -436,6 +473,7 @@ export function useAIChat() {
     clearChatHistory,
     exportChatHistory,
     saveUserModelSettings,
-    addCustomModel
+    addCustomModel,
+    deleteCustomModel
   };
 }
