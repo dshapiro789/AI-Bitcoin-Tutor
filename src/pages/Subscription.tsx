@@ -10,10 +10,13 @@ const plans = [
     id: 'monthly',
     name: 'Monthly',
     price: 10.00,
-    stripePriceId: 'price_monthly',
+    stripePriceId: 'price_1RYV5qG7jCpuFqxwzD6a8tx3',
     interval: 'month',
     features: [
       'Unlimited Access to AI Chatbot',
+      'Voice Input & Text-to-Speech',
+      'Advanced Bitcoin Education',
+      'Priority Support',
       'Early Access to New Features'
     ]
   },
@@ -21,11 +24,13 @@ const plans = [
     id: 'annual',
     name: 'Annual',
     price: 80.00,
-    stripePriceId: 'price_annual',
+    stripePriceId: 'price_1RYV6HG7jCpuFqxwnzZSXb4q',
     interval: 'year',
     features: [
       'All Monthly Features',
-      '2 Months Free'
+      '2 Months Free',
+      'Exclusive Annual Content',
+      'Premium Support'
     ]
   }
 ];
@@ -50,10 +55,19 @@ function Subscription() {
     setError(null);
 
     try {
-      const response = await fetch('/api/create-checkout-session', {
+      console.log('Creating checkout session for user:', user.id, 'with price:', selectedPlan.stripePriceId);
+      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      
+      // Use the correct function name that you deployed
+      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-payments`;
+      console.log('Full function URL:', functionUrl);
+      
+      // Call Supabase Edge Function
+      const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           priceId: selectedPlan.stripePriceId,
@@ -61,14 +75,34 @@ function Subscription() {
         }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to create checkout session`);
       }
 
-      const { sessionId } = await response.json();
-      const result = await stripe?.redirectToCheckout({ sessionId });
+      const responseData = await response.json();
+      console.log('Response data:', responseData);
+      
+      const { sessionId } = responseData;
+      console.log('Got session ID:', sessionId);
+
+      if (!sessionId) {
+        throw new Error('No session ID returned from server');
+      }
+
+      if (!stripe) {
+        throw new Error('Stripe not initialized');
+      }
+
+      console.log('Redirecting to Stripe checkout...');
+      const result = await stripe.redirectToCheckout({ sessionId });
 
       if (result?.error) {
+        console.error('Stripe redirect error:', result.error);
         throw new Error(result.error.message);
       }
     } catch (err) {
@@ -85,14 +119,20 @@ function Subscription() {
         <p className="text-xl text-gray-600">
           Get unlimited access to all features and premium content
         </p>
-        {user && subscription?.tier === 'premium' && (
+        {user && subscription?.tier === 'premium' && subscription?.status === 'active' && (
           <div className="mt-6">
-            <a 
-              href="/account" 
-              className="text-orange-500 hover:text-orange-600 font-medium"
-            >
-              Already subscribed? Manage your subscription
-            </a>
+            <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-lg">
+              <Check className="h-5 w-5 mr-2" />
+              You already have an active premium subscription
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={() => navigate('/account')}
+                className="text-orange-500 hover:text-orange-600 font-medium"
+              >
+                Manage your subscription →
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -137,8 +177,9 @@ function Subscription() {
       </div>
 
       {error && (
-        <div className="max-w-md mx-auto mb-8 p-4 bg-red-50 text-red-700 text-sm">
-          {error}
+        <div className="max-w-md mx-auto mb-8 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+          <div className="font-medium mb-1">Payment Error</div>
+          <div>{error}</div>
         </div>
       )}
 
@@ -151,6 +192,22 @@ function Subscription() {
             </h3>
           </div>
 
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-gray-900 mb-2">Selected Plan:</h4>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">{selectedPlan.name} Plan</span>
+              <span className="font-semibold">${selectedPlan.price}/{selectedPlan.interval}</span>
+            </div>
+          </div>
+
+          {!user && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm">
+                You need to sign in before subscribing. You'll be redirected to sign in when you click subscribe.
+              </p>
+            </div>
+          )}
+
           <div className="mt-8">
             <button
               onClick={handleSubscribe}
@@ -162,7 +219,7 @@ function Subscription() {
               ) : (
                 <>
                   <Zap className="h-5 w-5 mr-2" />
-                  Subscribe Now
+                  {user ? 'Subscribe Now' : 'Sign In & Subscribe'}
                 </>
               )}
             </button>
@@ -170,7 +227,11 @@ function Subscription() {
 
           <div className="mt-6 flex items-center justify-center text-sm text-gray-500">
             <Shield className="h-4 w-4 mr-2" />
-            Secure, encrypted payment processing
+            Secure, encrypted payment processing by Stripe
+          </div>
+
+          <div className="mt-4 text-center text-xs text-gray-400">
+            You can cancel your subscription at any time from your account settings.
           </div>
         </div>
       </div>

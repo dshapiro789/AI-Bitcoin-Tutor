@@ -1,40 +1,16 @@
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
-
-export async function createCheckoutSession(priceId: string, customerId?: string) {
-  const session = await stripe.checkout.sessions.create({
-    mode: 'subscription',
-    payment_method_types: ['card'],
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
-    customer: customerId,
-    allow_promotion_codes: true,
-    billing_address_collection: 'required',
-    success_url: `${process.env.DOMAIN}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.DOMAIN}/subscription`,
-  });
-
-  return session;
-}
+// Note: The createCheckoutSession function has been moved to Supabase Edge Function
+// This file now only contains utility functions that might be used elsewhere
 
 export async function createCustomer(email: string) {
-  const customer = await stripe.customers.create({
-    email,
-  });
-
-  return customer;
+  // This function would need to be called from a secure backend
+  // For now, customer creation can be handled in the Edge Function if needed
+  throw new Error('Customer creation should be handled server-side');
 }
 
 export async function handleSubscriptionChange(subscriptionId: string) {
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  
-  // Update subscription status in your database
-  return subscription;
+  // This function would need to be called from a secure backend
+  // Webhook handling should be implemented in a separate Edge Function
+  throw new Error('Subscription changes should be handled server-side via webhooks');
 }

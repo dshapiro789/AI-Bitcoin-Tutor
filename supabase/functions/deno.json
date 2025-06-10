@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "npm:": "npm:",
+    "jsr:": "jsr:"
+  },
+  "compilerOptions": {
+    "lib": ["deno.ns", "deno.window", "deno.unstable"],
+    "strict": true,
+    "allowJs": true
+  },
+  "nodeModulesDir": false
+}

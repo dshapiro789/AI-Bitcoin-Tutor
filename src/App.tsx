@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import AiChat from './pages/AiChat';
 import Subscription from './pages/Subscription';
+import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import Resources from './pages/Resources';
 import Auth from './pages/Auth';
 import AccountSettings from './pages/AccountSettings';
@@ -40,6 +41,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/subscription" element={<Subscription />} />
+          <Route path="/subscription/success" element={<SubscriptionSuccess />} />
           
           {/* Protected Routes */}
           <Route 
