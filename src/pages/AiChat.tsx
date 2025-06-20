@@ -5,14 +5,15 @@ import {
   CreditCard, Bot, Key, Crown, CheckCircle, 
   Calendar, AlertTriangle, ArrowRight, X, Menu,
   Search, Filter, Settings, Send, RefreshCw, Brain,
-  Sparkles, Clock, Download, ChevronDown,
+  Sparkles, Clock, ChevronDown,
   ChevronUp, Trash2, MessageSquare, 
   Save, Upload, History, FileText, Plus, ArrowUp,
-  GraduationCap, BookOpen, Zap, Target, Award
+  GraduationCap, BookOpen, Zap, Target, Award, Share2
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
 import { ChatMessage } from '../components/ChatMessage';
+import { ShareExportModal } from '../components/ShareExportModal';
 import { useAIChat } from '../hooks/useAIChat';
 
 function AiChat() {
@@ -27,6 +28,7 @@ function AiChat() {
     remainingMessages,
     isPremium,
     currentThoughts,
+    contextMemory,
     clearChatHistory,
     exportChatHistory,
     saveUserModelSettings,
@@ -50,6 +52,7 @@ function AiChat() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [modelToDelete, setModelToDelete] = useState<string | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [showShareExportModal, setShowShareExportModal] = useState(false);
   
   // New model form state
   const [newModelId, setNewModelId] = useState('');
@@ -464,11 +467,11 @@ function AiChat() {
                         Save Settings
                       </button>
                       <button
-                        onClick={exportChatHistory}
+                        onClick={() => setShowShareExportModal(true)}
                         className="flex items-center justify-center px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]"
                       >
-                        <Download className="h-4 w-4 mr-2" />
-                        Export Chat
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share/Export Chat
                       </button>
                       <button
                         onClick={() => setShowClearConfirm(true)}
@@ -1009,6 +1012,15 @@ function AiChat() {
           </div>
         )}
       </div>
+
+      {/* Share/Export Modal */}
+      <ShareExportModal
+        isOpen={showShareExportModal}
+        onClose={() => setShowShareExportModal(false)}
+        messages={messages}
+        userEmail={user?.email}
+        userName={user?.email}
+      />
 
       {/* Clear History Confirmation Modal */}
       {showClearConfirm && (
