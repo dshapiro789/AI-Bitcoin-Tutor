@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Globe, MessageSquare, Shield, Ban as Bank, Library, ChevronRight, Lock, Crown } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
+import { DonationSection } from '../components/DonationSection';
 
 function Home() {
   const navigate = useNavigate();
@@ -223,6 +224,9 @@ function Home() {
           </motion.button>
         </div>
       )}
+
+      {/* Donation Section */}
+      <DonationSection />
     </div>
   );
 }
