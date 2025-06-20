@@ -275,7 +275,7 @@ function AiChat() {
 
   // Check if a model is the default model (cannot be deleted)
   const isDefaultModel = (modelId: string) => {
-    return modelId === 'deepseek/deepseek-chat-v3-0324:free';
+    return modelId === 'deepseek/deepseek-chat';
   };
 
   return (
@@ -663,8 +663,8 @@ function AiChat() {
         )}
       </AnimatePresence>
 
-      {/* Messages Container - This is now the scrollable area */}
-      <div className="flex-1 bg-gradient-to-br from-gray-50 to-orange-50 overflow-y-auto p-4 space-y-4">
+      {/* Messages Container - Now with bottom padding for mobile fixed input */}
+      <div className="flex-1 bg-gradient-to-br from-gray-50 to-orange-50 overflow-y-auto p-4 space-y-4 pb-32 md:pb-4">
         {filteredMessages.map((message) => (
           <div key={message.id} className="relative group">
             <ChatMessage
@@ -781,8 +781,8 @@ function AiChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Section - Fixed at bottom */}
-      <div className="border-t bg-white p-4 flex-shrink-0">
+      {/* Input Section - Fixed at bottom on mobile, normal on desktop */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:relative md:bottom-auto md:left-auto md:right-auto border-t bg-white p-4">
         <form onSubmit={handleSubmit} className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
             <button

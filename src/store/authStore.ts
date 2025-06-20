@@ -122,7 +122,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       const { data: { session }, error } = await supabase.auth.getSession();
       
-      if (error) throw error;
+      if (error) {
+        // If there's an error (like session_not_found), clear the invalid session
+        console.warn('Session restoration failed, clearing invalid session:', error);
+        await supabase.auth.signOut();
+        set({ user: null });
+        return;
+      }
 
       if (session?.user) {
         // Set admin status for specific email
@@ -138,6 +144,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     } catch (err) {
       console.error('Error restoring session:', err);
+      // Clear any invalid session on unexpected errors
+      try {
+        await supabase.auth.signOut();
+        set({ user: null });
+      } catch (signOutError) {
+        console.error('Error clearing invalid session:', signOutError);
+      }
     } finally {
       set({ loading: false });
     }
