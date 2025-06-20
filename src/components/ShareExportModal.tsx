@@ -102,21 +102,16 @@ export function ShareExportModal({
     }
   };
 
-  // Print to PDF (using browser's print dialog)
-  const handlePrintToPDF = () => {
+  // Export as HTML file (fallback for PDF)
+  const handleExportHTML = () => {
     try {
       const content = generateChatContent('html');
-      const printWindow = window.open('', '_blank');
-      
-      if (!printWindow) {
-        throw new Error('Popup blocked. Please allow popups and try again.');
-      }
-
-      printWindow.document.write(`
+      const fullHTML = `
         <!DOCTYPE html>
         <html>
         <head>
           <title>Bitcoin AI Tutor Chat History</title>
+          <meta charset="UTF-8">
           <style>
             body { 
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
@@ -128,33 +123,146 @@ export function ShareExportModal({
             }
             @media print {
               body { margin: 0; padding: 15px; }
-              .no-print { display: none; }
             }
           </style>
         </head>
         <body>
           ${content}
-          <div class="no-print" style="margin-top: 30px; text-align: center;">
-            <button onclick="window.print()" style="background: #f97316; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Print to PDF</button>
-            <button onclick="window.close()" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-left: 10px;">Close</button>
-          </div>
         </body>
         </html>
-      `);
+      `;
       
-      printWindow.document.close();
-      printWindow.focus();
+      const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bitcoin-chat-history-${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       
       setShareStatus('success');
-      setShareMessage('Print dialog opened. Use your browser\'s print function to save as PDF.');
+      setShareMessage('HTML file downloaded! Open it in your browser and use Ctrl+P (Cmd+P on Mac) to print as PDF.');
       setTimeout(() => {
         setShareStatus('idle');
         setShareMessage('');
       }, 5000);
     } catch (error) {
+      console.error('Failed to export HTML file:', error);
+      setShareStatus('error');
+      setShareMessage('Failed to export HTML file. Please try again.');
+    }
+  };
+
+  // Print to PDF (with improved popup handling)
+  const handlePrintToPDF = () => {
+    try {
+      const content = generateChatContent('html');
+      
+      // First try to open popup
+      const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+      
+      if (!printWindow) {
+        // Popup was blocked, offer alternative
+        setShareStatus('error');
+        setShareMessage('Popup blocked by your browser. Please allow popups for this site, or use the HTML export option below and print from there.');
+        setTimeout(() => {
+          setShareStatus('idle');
+          setShareMessage('');
+        }, 5000);
+        return;
+      }
+
+      // Check if popup was actually opened (some browsers return object even when blocked)
+      setTimeout(() => {
+        if (printWindow.closed) {
+          setShareStatus('error');
+          setShareMessage('Print window was blocked. Please allow popups for this site, or use the HTML export option and print from there.');
+          setTimeout(() => {
+            setShareStatus('idle');
+            setShareMessage('');
+          }, 5000);
+          return;
+        }
+
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Bitcoin AI Tutor Chat History</title>
+            <meta charset="UTF-8">
+            <style>
+              body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+                line-height: 1.6; 
+                color: #333; 
+                max-width: 800px; 
+                margin: 0 auto; 
+                padding: 20px; 
+              }
+              @media print {
+                body { margin: 0; padding: 15px; }
+                .no-print { display: none; }
+              }
+              .print-button {
+                background: #f97316; 
+                color: white; 
+                border: none; 
+                padding: 12px 24px; 
+                border-radius: 8px; 
+                cursor: pointer; 
+                font-size: 16px;
+                margin-right: 10px;
+              }
+              .close-button {
+                background: #6b7280; 
+                color: white; 
+                border: none; 
+                padding: 12px 24px; 
+                border-radius: 8px; 
+                cursor: pointer; 
+                font-size: 16px;
+              }
+              .button-container {
+                margin: 30px 0;
+                text-align: center;
+                padding: 20px;
+                background: #f9fafb;
+                border-radius: 8px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="no-print button-container">
+              <p style="margin-bottom: 15px; color: #6b7280;">Use your browser's print function to save as PDF (Ctrl+P or Cmd+P)</p>
+              <button class="print-button" onclick="window.print()">Print to PDF</button>
+              <button class="close-button" onclick="window.close()">Close</button>
+            </div>
+            ${content}
+          </body>
+          </html>
+        `);
+        
+        printWindow.document.close();
+        printWindow.focus();
+        
+        setShareStatus('success');
+        setShareMessage('Print dialog opened successfully! Use Ctrl+P (Cmd+P on Mac) to save as PDF.');
+        setTimeout(() => {
+          setShareStatus('idle');
+          setShareMessage('');
+        }, 5000);
+      }, 100);
+      
+    } catch (error) {
       console.error('Failed to open print dialog:', error);
       setShareStatus('error');
-      setShareMessage('Failed to open print dialog. Please try again.');
+      setShareMessage('Failed to open print dialog. Please try the HTML export option and print from there.');
+      setTimeout(() => {
+        setShareStatus('idle');
+        setShareMessage('');
+      }, 3000);
     }
   };
 
@@ -403,6 +511,20 @@ export function ShareExportModal({
                 </div>
               </button>
 
+              {/* Export as HTML */}
+              <button
+                onClick={handleExportHTML}
+                className="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 hover:bg-orange-50 transition-all group"
+              >
+                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mr-4 group-hover:bg-blue-200 transition-colors">
+                  <Globe className="h-6 w-6 text-blue-500" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">HTML File</div>
+                  <div className="text-sm text-gray-500">Download formatted HTML (print to PDF)</div>
+                </div>
+              </button>
+
               {/* Print to PDF */}
               <button
                 onClick={handlePrintToPDF}
@@ -412,8 +534,8 @@ export function ShareExportModal({
                   <Printer className="h-6 w-6 text-red-500" />
                 </div>
                 <div className="text-left">
-                  <div className="font-medium text-gray-900">PDF File</div>
-                  <div className="text-sm text-gray-500">Print to PDF via browser</div>
+                  <div className="font-medium text-gray-900">Quick Print</div>
+                  <div className="text-sm text-gray-500">Open print dialog directly</div>
                 </div>
               </button>
             </div>
@@ -423,10 +545,10 @@ export function ShareExportModal({
               <div className="flex items-start">
                 <AlertCircle className="h-5 w-5 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-amber-700">
-                  <div className="font-medium mb-1">Format Limitations</div>
+                  <div className="font-medium mb-1">Export Tips</div>
                   <ul className="space-y-1 text-xs">
-                    <li>• Word document (.docx) generation requires additional software installation</li>
-                    <li>• PDF export uses your browser's print function - formatting may vary</li>
+                    <li>• If "Quick Print" is blocked, use "HTML File" export and print from there</li>
+                    <li>• HTML files can be opened in any browser and printed as PDF</li>
                     <li>• SMS sharing may truncate long conversations due to character limits</li>
                     <li>• All exports include timestamps and preserve conversation structure</li>
                   </ul>

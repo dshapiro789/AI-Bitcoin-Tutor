@@ -201,6 +201,21 @@ What would you like to learn about today?`,
     }
   };
 
+  const loadMessagesFromHistory = (historyMessages: any[]) => {
+    const formattedMessages: Message[] = historyMessages.map(msg => ({
+      id: msg.id,
+      text: msg.message_text,
+      isUser: msg.is_user,
+      model: msg.model_used,
+      timestamp: new Date(msg.created_at),
+      category: msg.category as Message['category'],
+      codeBlocks: msg.metadata?.codeBlocks || [],
+      quickReplies: msg.metadata?.quickReplies || []
+    }));
+
+    setMessages(formattedMessages);
+  };
+
   const loadUserModelSettings = async () => {
     if (!user) return;
 
@@ -729,6 +744,7 @@ What would you like to learn about today?`,
     showWelcomeScreen,
     setShowWelcomeScreen,
     handleKnowledgeLevelSelection,
-    starterQuestions
+    starterQuestions,
+    loadMessagesFromHistory
   };
 }

@@ -14,7 +14,10 @@ import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
 import { ChatMessage } from '../components/ChatMessage';
 import { ShareExportModal } from '../components/ShareExportModal';
+import { ChatHistorySidebar } from '../components/ChatHistorySidebar';
+import { Toast } from '../components/Toast';
 import { useAIChat } from '../hooks/useAIChat';
+import { useChatHistory } from '../hooks/useChatHistory';
 
 function AiChat() {
   const {
@@ -37,8 +40,11 @@ function AiChat() {
     showWelcomeScreen,
     setShowWelcomeScreen,
     handleKnowledgeLevelSelection,
-    starterQuestions
+    starterQuestions,
+    loadMessagesFromHistory
   } = useAIChat();
+  
+  const { loadChatSession } = useChatHistory();
   
   const [input, setInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -53,6 +59,18 @@ function AiChat() {
   const [modelToDelete, setModelToDelete] = useState<string | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [showShareExportModal, setShowShareExportModal] = useState(false);
+  const [showChatHistory, setShowChatHistory] = useState(false);
+  
+  // Toast notification state
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
+    isVisible: boolean;
+  }>({
+    message: '',
+    type: 'success',
+    isVisible: false
+  });
   
   // New model form state
   const [newModelId, setNewModelId] = useState('');
@@ -112,6 +130,20 @@ function AiChat() {
       details: 'For Bitcoin experts who want to discuss cutting-edge developments and nuanced technical topics.'
     }
   ];
+
+  // Show toast notification
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({
+      message,
+      type,
+      isVisible: true
+    });
+  };
+
+  // Hide toast notification
+  const hideToast = () => {
+    setToast(prev => ({ ...prev, isVisible: false }));
+  };
 
   useEffect(() => {
     scrollToBottom();
@@ -192,6 +224,7 @@ function AiChat() {
     try {
       await clearChatHistory();
       setShowClearConfirm(false);
+      showToast('Chat history cleared successfully');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to clear chat history');
     }
@@ -209,8 +242,7 @@ function AiChat() {
       await deleteCustomModel(modelToDelete);
       setShowDeleteConfirm(false);
       setModelToDelete(null);
-      setError('Model deleted successfully!');
-      setTimeout(() => setError(null), 3000);
+      showToast('Model deleted successfully');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete model');
     }
@@ -230,12 +262,11 @@ function AiChat() {
         }
       }
       
-      setError('Settings saved successfully!');
+      showToast('Settings saved successfully');
       
       // Auto-close settings menu after 1.5 seconds
       setTimeout(() => {
         setShowSettings(false);
-        setError(null);
       }, 1500);
       
     } catch (err) {
@@ -281,11 +312,27 @@ function AiChat() {
       setNewModelMaxTokens(1000);
       setShowAddModel(false);
       
-      setError('Custom model added successfully!');
-      setTimeout(() => setError(null), 3000);
+      showToast('Custom model added successfully');
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add custom model');
+    }
+  };
+
+  const handleNewChat = () => {
+    clearChatHistory();
+    setShowChatHistory(false);
+  };
+
+  const handleLoadChat = async (sessionId: string) => {
+    try {
+      const sessionMessages = await loadChatSession(sessionId);
+      if (sessionMessages && sessionMessages.length > 0) {
+        loadMessagesFromHistory(sessionMessages);
+        showToast('Chat loaded successfully');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load chat');
     }
   };
 
@@ -394,7 +441,23 @@ function AiChat() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
+
+      {/* Chat History Sidebar */}
+      <ChatHistorySidebar
+        isOpen={showChatHistory}
+        onClose={() => setShowChatHistory(false)}
+        onNewChat={handleNewChat}
+        onLoadChat={handleLoadChat}
+      />
+
       {/* Search Bar */}
       <AnimatePresence>
         {showSearch && (
@@ -947,6 +1010,19 @@ function AiChat() {
       <div className="fixed bottom-0 left-0 right-0 z-50 md:relative md:bottom-auto md:left-auto md:right-auto border-t bg-white p-4">
         <form onSubmit={handleSubmit} className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={() => setShowChatHistory(!showChatHistory)}
+              className={`p-3 rounded-xl transition-colors ${
+                showChatHistory 
+                  ? 'bg-orange-500 text-white' 
+                  : 'text-gray-500 hover:bg-gray-100'
+              }`}
+              title="View Chat History"
+            >
+              <History className="h-5 w-5" />
+            </button>
+
             <button
               type="button"
               onClick={() => setShowSettings(!showSettings)}
