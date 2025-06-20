@@ -7,7 +7,8 @@ import {
   Search, Filter, Settings, Send, RefreshCw, Brain,
   Sparkles, Clock, Download, ChevronDown,
   ChevronUp, Trash2, MessageSquare, 
-  Save, Upload, History, FileText, Plus, ArrowUp
+  Save, Upload, History, FileText, Plus, ArrowUp,
+  GraduationCap, BookOpen, Zap, Target, Award
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
@@ -30,14 +31,17 @@ function AiChat() {
     exportChatHistory,
     saveUserModelSettings,
     addCustomModel,
-    deleteCustomModel
+    deleteCustomModel,
+    showWelcomeScreen,
+    setShowWelcomeScreen,
+    handleKnowledgeLevelSelection,
+    starterQuestions
   } = useAIChat();
   
   const [input, setInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [messageFilter, setMessageFilter] = useState<string>('all');
@@ -61,6 +65,50 @@ function AiChat() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  // Knowledge levels with descriptions and icons
+  const knowledgeLevels = [
+    {
+      id: 'novice',
+      title: 'Novice',
+      description: 'I know nothing about Bitcoin',
+      icon: <BookOpen className="h-8 w-8" />,
+      color: 'from-green-400 to-green-600',
+      details: 'Perfect for complete beginners. We\'ll start with the very basics and build your understanding step by step.'
+    },
+    {
+      id: 'beginner',
+      title: 'Beginner',
+      description: 'I know what Bitcoin is, but not much else',
+      icon: <GraduationCap className="h-8 w-8" />,
+      color: 'from-blue-400 to-blue-600',
+      details: 'Great for those who have heard of Bitcoin but want to understand how it works and why it matters.'
+    },
+    {
+      id: 'intermediate',
+      title: 'Intermediate',
+      description: 'I know the basics about Bitcoin',
+      icon: <Target className="h-8 w-8" />,
+      color: 'from-orange-400 to-orange-600',
+      details: 'Ideal for users who understand basic concepts and want to dive deeper into technical aspects.'
+    },
+    {
+      id: 'advanced',
+      title: 'Advanced',
+      description: 'I know a lot about Bitcoin',
+      icon: <Zap className="h-8 w-8" />,
+      color: 'from-purple-400 to-purple-600',
+      details: 'For experienced users ready to explore complex topics, technical details, and advanced concepts.'
+    },
+    {
+      id: 'expert',
+      title: 'Expert',
+      description: 'I have enough knowledge to teach others about Bitcoin',
+      icon: <Award className="h-8 w-8" />,
+      color: 'from-red-400 to-red-600',
+      details: 'For Bitcoin experts who want to discuss cutting-edge developments and nuanced technical topics.'
+    }
+  ];
 
   useEffect(() => {
     scrollToBottom();
@@ -261,6 +309,87 @@ function AiChat() {
     return modelId === 'deepseek/deepseek-chat';
   };
 
+  // Welcome Screen Component
+  const WelcomeScreen = () => (
+    <div className="flex-1 bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-4xl w-full"
+      >
+        <div className="text-center mb-12">
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center justify-center w-20 h-20 bg-orange-500 rounded-full mb-6"
+          >
+            <Brain className="h-10 w-10 text-white" />
+          </motion.div>
+          
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to AI Bitcoin Tutor!
+          </h1>
+          
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+            To provide you with the most relevant information, please select your current Bitcoin knowledge level:
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {knowledgeLevels.map((level, index) => (
+            <motion.button
+              key={level.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * index }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleKnowledgeLevelSelection(level.id)}
+              className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-left group"
+            >
+              <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r ${level.color} rounded-xl mb-4 text-white group-hover:scale-110 transition-transform`}>
+                {level.icon}
+              </div>
+              
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                {level.title}
+              </h3>
+              
+              <p className="text-gray-600 mb-3 font-medium">
+                {level.description}
+              </p>
+              
+              <p className="text-sm text-gray-500">
+                {level.details}
+              </p>
+            </motion.button>
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="text-center"
+        >
+          <p className="text-gray-500 text-sm">
+            Don't worry - you can always change your knowledge level later in the settings.
+          </p>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+
+  // If showing welcome screen, render it instead of the chat interface
+  if (showWelcomeScreen) {
+    return (
+      <div className="flex flex-col h-full">
+        <WelcomeScreen />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Search Bar */}
@@ -320,6 +449,13 @@ function AiChat() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
                   {user && (
                     <>
+                      <button
+                        onClick={() => setShowWelcomeScreen(true)}
+                        className="flex items-center justify-center px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <GraduationCap className="h-4 w-4 mr-2" />
+                        Change Knowledge Level
+                      </button>
                       <button
                         onClick={handleSaveModelSettings}
                         className="flex items-center justify-center px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]"

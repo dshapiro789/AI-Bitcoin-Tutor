@@ -24,27 +24,16 @@ export interface Message {
 }
 
 export function useAIChat() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: "Hi! I'm your Bitcoin AI Tutor. What would you like to learn about?",
-      isUser: false,
-      timestamp: new Date(),
-      quickReplies: [
-        "What is Bitcoin?",
-        "How does the Bitcoin blockchain work?",
-        "What is a Bitcoin wallet and how do I use one?",
-        "Why is Bitcoin considered 'sound money'?",
-        "Explain the Lightning Network"
-      ]
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [models, setModels] = useState<AIModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentThoughts, setCurrentThoughts] = useState<string | null>(null);
   const [contextMemory, setContextMemory] = useState<number>(0);
+  const [showWelcomeScreen, setShowWelcomeScreen] = useState(false);
+  const [starterQuestions, setStarterQuestions] = useState<string[]>([]);
+  
   const { user } = useAuthStore();
   const { subscription } = useSubscriptionStore();
   const { checkLimit, incrementCount, getRemainingMessages } = useChatLimitStore();
@@ -56,12 +45,24 @@ export function useAIChat() {
     if (user) {
       loadChatHistory();
       loadUserModelSettings();
+      
+      // Check if we should show welcome screen
+      if (!user.knowledgeLevel) {
+        setShowWelcomeScreen(true);
+        setMessages([]); // Clear any existing messages
+      } else {
+        setShowWelcomeScreen(false);
+        // Load initial message with starter questions if no chat history
+        if (messages.length === 0) {
+          loadInitialMessage(user.knowledgeLevel);
+        }
+      }
     }
   }, [user]);
 
   const loadModels = async () => {
     try {
-      // Set the default Gemma model
+      // Set the default model
       setModels(defaultModels);
       aiService.setModel(defaultModels[0]);
     } catch (err) {
@@ -69,6 +70,102 @@ export function useAIChat() {
       setError('Failed to load AI models');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadInitialMessage = (knowledgeLevel: string) => {
+    const questions = generateStarterQuestions(knowledgeLevel);
+    setStarterQuestions(questions);
+    
+    const welcomeMessage: Message = {
+      id: '1',
+      text: `Welcome back! I see you're at the **${knowledgeLevel}** level. I'm here to help you learn more about Bitcoin. What would you like to explore today?`,
+      isUser: false,
+      timestamp: new Date(),
+      quickReplies: questions
+    };
+    
+    setMessages([welcomeMessage]);
+  };
+
+  const generateStarterQuestions = (level: string): string[] => {
+    const questionsByLevel = {
+      'novice': [
+        "What is Bitcoin and why was it created?",
+        "How is Bitcoin different from regular money?",
+        "Is Bitcoin safe to use?",
+        "How do I get my first Bitcoin?",
+        "What is a Bitcoin wallet?"
+      ],
+      'beginner': [
+        "How does Bitcoin mining work?",
+        "What is the blockchain and how does it work?",
+        "How do Bitcoin transactions work?",
+        "What are Bitcoin addresses and private keys?",
+        "Why is Bitcoin's supply limited to 21 million?"
+      ],
+      'intermediate': [
+        "What is the Lightning Network and how does it work?",
+        "How do multisig wallets improve security?",
+        "What are the different types of Bitcoin nodes?",
+        "How does Bitcoin's difficulty adjustment work?",
+        "What are the privacy considerations with Bitcoin?"
+      ],
+      'advanced': [
+        "How do Bitcoin script opcodes work?",
+        "What are the technical details of Schnorr signatures?",
+        "How does Taproot improve Bitcoin's functionality?",
+        "What are the economics of Bitcoin mining pools?",
+        "How do atomic swaps work technically?"
+      ],
+      'expert': [
+        "What are the latest developments in Bitcoin Core?",
+        "How might quantum computing affect Bitcoin?",
+        "What are the trade-offs in different scaling solutions?",
+        "How do covenant proposals change Bitcoin's capabilities?",
+        "What are the implications of different fee market designs?"
+      ]
+    };
+
+    return questionsByLevel[level as keyof typeof questionsByLevel] || questionsByLevel['beginner'];
+  };
+
+  const handleKnowledgeLevelSelection = async (level: string) => {
+    try {
+      const { updateKnowledgeLevel } = useAuthStore.getState();
+      await updateKnowledgeLevel(level);
+      
+      setShowWelcomeScreen(false);
+      
+      // Generate personalized welcome message and starter questions
+      const questions = generateStarterQuestions(level);
+      setStarterQuestions(questions);
+      
+      const levelDescriptions = {
+        'novice': "You're just starting your Bitcoin journey - that's exciting! I'll explain everything in simple terms.",
+        'beginner': "You have some Bitcoin knowledge. I'll help you build on what you know with clear explanations.",
+        'intermediate': "You understand the basics well. I'll dive deeper into technical concepts and practical applications.",
+        'advanced': "You have solid Bitcoin knowledge. I'll explore complex topics and technical details with you.",
+        'expert': "You're highly knowledgeable about Bitcoin. I'll discuss cutting-edge developments and nuanced topics."
+      };
+      
+      const welcomeMessage: Message = {
+        id: '1',
+        text: `Perfect! I've set your knowledge level to **${level}**. ${levelDescriptions[level as keyof typeof levelDescriptions]} 
+
+Your preference has been saved for future conversations. You can always change this in the settings if needed.
+
+What would you like to learn about today?`,
+        isUser: false,
+        timestamp: new Date(),
+        quickReplies: questions
+      };
+      
+      setMessages([welcomeMessage]);
+      
+    } catch (err) {
+      setError('Failed to save knowledge level. Please try again.');
+      console.error('Error setting knowledge level:', err);
     }
   };
 
@@ -97,8 +194,7 @@ export function useAIChat() {
           quickReplies: msg.metadata?.quickReplies || []
         }));
 
-        // Keep the welcome message and add history
-        setMessages(prev => [prev[0], ...historyMessages]);
+        setMessages(historyMessages);
       }
     } catch (err) {
       console.error('Error loading chat history:', err);
@@ -234,7 +330,7 @@ export function useAIChat() {
     if (!user) return;
 
     try {
-      // Check if this is the default model (DeepSeek V3)
+      // Check if this is the default model
       const isDefaultModel = defaultModels.some(m => m.id === modelId);
       if (isDefaultModel) {
         throw new Error('Cannot delete the default model');
@@ -275,20 +371,13 @@ export function useAIChat() {
 
       if (error) throw error;
 
-      // Reset to welcome message only
-      setMessages([{
-        id: '1',
-        text: "Hi! I'm your Bitcoin AI Tutor. What would you like to learn about?",
-        isUser: false,
-        timestamp: new Date(),
-        quickReplies: [
-          "What is Bitcoin?",
-          "How does the Bitcoin blockchain work?",
-          "What is a Bitcoin wallet and how do I use one?",
-          "Why is Bitcoin considered 'sound money'?",
-          "Explain the Lightning Network"
-        ]
-      }]);
+      // Reset to appropriate initial state
+      if (user.knowledgeLevel) {
+        loadInitialMessage(user.knowledgeLevel);
+      } else {
+        setMessages([]);
+        setShowWelcomeScreen(true);
+      }
     } catch (err) {
       console.error('Error clearing chat history:', err);
       throw err;
@@ -305,7 +394,7 @@ export function useAIChat() {
       })
       .join('\n');
 
-    const content = `# Bitcoin AI Tutor Chat History\n\nExported on: ${new Date().toLocaleString()}\n\n${chatContent}`;
+    const content = `# Bitcoin AI Tutor Chat History\n\nExported on: ${new Date().toLocaleString()}\nKnowledge Level: ${user?.knowledgeLevel || 'Not set'}\n\n${chatContent}`;
     
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -518,6 +607,18 @@ export function useAIChat() {
     return [...new Set(quickReplies)].slice(0, 4);
   };
 
+  const getKnowledgeLevelPrompt = (level: string): string => {
+    const prompts = {
+      'novice': 'The user is completely new to Bitcoin. Use simple language, avoid jargon, provide basic explanations, and use analogies to everyday concepts. Be encouraging and patient.',
+      'beginner': 'The user knows what Bitcoin is but needs clear explanations of concepts. Use accessible language while introducing some technical terms with explanations.',
+      'intermediate': 'The user understands Bitcoin basics. You can use technical terminology and dive deeper into concepts, but still provide context for complex topics.',
+      'advanced': 'The user has solid Bitcoin knowledge. Engage with technical details, discuss nuances, and explore complex interconnections between concepts.',
+      'expert': 'The user is highly knowledgeable. Discuss cutting-edge developments, technical specifications, and nuanced aspects of Bitcoin technology and economics.'
+    };
+    
+    return prompts[level as keyof typeof prompts] || prompts['beginner'];
+  };
+
   const sendMessage = async (text: string, model: AIModel) => {
     if (!text.trim() || isProcessing) return;
     
@@ -551,6 +652,7 @@ export function useAIChat() {
     const thoughts = [
       "Analyzing question context...",
       "Retrieving relevant Bitcoin knowledge...",
+      "Adapting response to your knowledge level...",
       "Formulating comprehensive response...",
       "Verifying technical accuracy...",
       "Preparing final answer..."
@@ -565,7 +667,14 @@ export function useAIChat() {
     }, 1000);
 
     try {
-      const response = await aiService.sendMessage(text);
+      // Create knowledge-level aware prompt
+      let enhancedPrompt = text;
+      if (user?.knowledgeLevel) {
+        const levelPrompt = getKnowledgeLevelPrompt(user.knowledgeLevel);
+        enhancedPrompt = `[User Knowledge Level: ${user.knowledgeLevel}. ${levelPrompt}]\n\nUser Question: ${text}`;
+      }
+
+      const response = await aiService.sendMessage(enhancedPrompt);
 
       if (!isPremium && user) {
         incrementCount(user.id);
@@ -616,6 +725,10 @@ export function useAIChat() {
     exportChatHistory,
     saveUserModelSettings,
     addCustomModel,
-    deleteCustomModel
+    deleteCustomModel,
+    showWelcomeScreen,
+    setShowWelcomeScreen,
+    handleKnowledgeLevelSelection,
+    starterQuestions
   };
 }

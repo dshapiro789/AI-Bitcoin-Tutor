@@ -7,6 +7,7 @@ interface User {
   email: string | undefined;
   createdAt: string;
   isAdmin: boolean;
+  knowledgeLevel?: string;
 }
 
 interface AuthState {
@@ -17,9 +18,10 @@ interface AuthState {
   signOut: () => Promise<void>;
   restoreSession: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  updateKnowledgeLevel: (level: string) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   loading: false,
 
@@ -48,6 +50,22 @@ export const useAuthStore = create<AuthState>((set) => ({
         throw new Error('No user data returned');
       }
 
+      // Create profile for the new user
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email,
+          full_name: null,
+          role: 'user',
+          knowledge_level: null // Will trigger welcome screen
+        });
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        // Don't throw here as the user account was created successfully
+      }
+
       // Set admin status for specific email
       const isAdmin = email === 'dshapiro789@gmail.com';
 
@@ -55,7 +73,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         id: data.user.id,
         email: data.user.email,
         createdAt: data.user.created_at || new Date().toISOString(),
-        isAdmin
+        isAdmin,
+        knowledgeLevel: null
       };
 
       // If signing up with a subscription plan, create the subscription
@@ -89,6 +108,13 @@ export const useAuthStore = create<AuthState>((set) => ({
         throw new Error('No user data returned');
       }
 
+      // Get user profile including knowledge level
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('knowledge_level')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
       // Set admin status for specific email
       const isAdmin = email === 'dshapiro789@gmail.com';
 
@@ -96,7 +122,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         id: data.user.id,
         email: data.user.email,
         createdAt: data.user.created_at || new Date().toISOString(),
-        isAdmin
+        isAdmin,
+        knowledgeLevel: profile?.knowledge_level || null
       };
       set({ user });
     } catch (err) {
@@ -131,6 +158,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
 
       if (session?.user) {
+        // Get user profile including knowledge level
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('knowledge_level')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
         // Set admin status for specific email
         const isAdmin = session.user.email === 'dshapiro789@gmail.com';
 
@@ -138,7 +172,8 @@ export const useAuthStore = create<AuthState>((set) => ({
           id: session.user.id,
           email: session.user.email,
           createdAt: session.user.created_at || new Date().toISOString(),
-          isAdmin
+          isAdmin,
+          knowledgeLevel: profile?.knowledge_level || null
         };
         set({ user });
       }
@@ -166,6 +201,31 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (err) {
       console.error('Error resetting password:', err);
       throw err instanceof Error ? err : new Error('Failed to send password reset email');
+    }
+  },
+
+  updateKnowledgeLevel: async (level: string) => {
+    try {
+      const { user } = get();
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ knowledge_level: level })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      set({ 
+        user: { 
+          ...user, 
+          knowledgeLevel: level 
+        } 
+      });
+    } catch (err) {
+      console.error('Error updating knowledge level:', err);
+      throw err instanceof Error ? err : new Error('Failed to update knowledge level');
     }
   }
 }));
