@@ -570,23 +570,10 @@ function Contact() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8"
+          className="mt-12"
         >
-          {/* Response Time */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center mb-4">
-              <Clock className="h-6 w-6 text-orange-500 mr-3" />
-              <h3 className="text-lg font-semibold text-gray-900">Response Time</h3>
-            </div>
-            <div className="space-y-2 text-sm text-gray-600">
-              <p><span className="font-medium text-red-600">Urgent:</span> Within 24 hours</p>
-              <p><span className="font-medium text-yellow-600">Moderate:</span> Within 3-5 business days</p>
-              <p><span className="font-medium text-green-600">Low:</span> Within 1-2 weeks</p>
-            </div>
-          </div>
-
           {/* Alternative Contact */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
+          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md mx-auto">
             <div className="flex items-center mb-4">
               <Mail className="h-6 w-6 text-orange-500 mr-3" />
               <h3 className="text-lg font-semibold text-gray-900">Direct Contact</h3>
