@@ -23,6 +23,9 @@ export interface Message {
   quickReplies?: string[];
 }
 
+// Minimum loading time to ensure smooth UX
+const MIN_LOADING_TIME_MS = 1500; // 1.5 seconds
+
 export function useAIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -40,24 +43,60 @@ export function useAIChat() {
 
   const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
 
-  useEffect(() => {
-    loadModels();
-    if (user) {
-      loadChatHistory();
-      loadUserModelSettings();
+  // Initialize chat with proper loading coordination and minimum display time
+  const initializeChat = async () => {
+    const startTime = Date.now();
+    
+    try {
+      setIsLoading(true);
       
-      // Check if we should show welcome screen
-      if (!user.knowledgeLevel) {
-        setShowWelcomeScreen(true);
-        setMessages([]); // Clear any existing messages
-      } else {
-        setShowWelcomeScreen(false);
-        // Load initial message with starter questions if no chat history
-        if (messages.length === 0) {
-          loadInitialMessage(user.knowledgeLevel);
+      // Load models first
+      await loadModels();
+      
+      if (user) {
+        // Load user-specific data in parallel
+        const fetchedMessages = await Promise.all([
+          loadChatHistory(),
+          loadUserModelSettings()
+        ]);
+        
+        const chatMessages = fetchedMessages[0]; // Get messages from loadChatHistory
+        
+        // Check if we should show welcome screen
+        if (!user.knowledgeLevel) {
+          setShowWelcomeScreen(true);
+          setMessages([]); // Clear any existing messages
+        } else {
+          setShowWelcomeScreen(false);
+          // Load initial message with starter questions if no chat history
+          if (!chatMessages || chatMessages.length === 0) {
+            loadInitialMessage(user.knowledgeLevel);
+          }
         }
       }
+      
+      // Ensure minimum loading time for smooth UX
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < MIN_LOADING_TIME_MS) {
+        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME_MS - elapsedTime));
+      }
+      
+    } catch (err) {
+      console.error('Error initializing chat:', err);
+      setError('Failed to initialize chat. Please refresh the page.');
+      
+      // Still respect minimum loading time even on error
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < MIN_LOADING_TIME_MS) {
+        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME_MS - elapsedTime));
+      }
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    initializeChat();
   }, [user]);
 
   const loadModels = async () => {
@@ -68,8 +107,7 @@ export function useAIChat() {
     } catch (err) {
       console.error('Error loading models:', err);
       setError('Failed to load AI models');
-    } finally {
-      setIsLoading(false);
+      throw err; // Re-throw to be caught by initializeChat
     }
   };
 
@@ -169,8 +207,8 @@ What would you like to learn about today?`,
     }
   };
 
-  const loadChatHistory = async () => {
-    if (!user) return;
+  const loadChatHistory = async (): Promise<Message[] | null> => {
+    if (!user) return null;
 
     try {
       const { data, error } = await supabase
@@ -195,9 +233,13 @@ What would you like to learn about today?`,
         }));
 
         setMessages(historyMessages);
+        return historyMessages;
       }
+      
+      return [];
     } catch (err) {
       console.error('Error loading chat history:', err);
+      throw err; // Re-throw to be caught by initializeChat
     }
   };
 
@@ -272,6 +314,7 @@ What would you like to learn about today?`,
       }
     } catch (err) {
       console.error('Error loading user model settings:', err);
+      throw err; // Re-throw to be caught by initializeChat
     }
   };
 

@@ -8,13 +8,14 @@ import {
   Sparkles, Clock, ChevronDown,
   ChevronUp, Trash2, MessageSquare, 
   Save, Upload, History, FileText, Plus, ArrowUp,
-  GraduationCap, BookOpen, Zap, Target, Award, Share2, Loader
+  GraduationCap, BookOpen, Zap, Target, Award, Share2
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
 import { ChatMessage } from '../components/ChatMessage';
 import { ShareExportModal } from '../components/ShareExportModal';
 import { ChatHistorySidebar } from '../components/ChatHistorySidebar';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { Toast } from '../components/Toast';
 import { useAIChat } from '../hooks/useAIChat';
 import { useChatHistory } from '../hooks/useChatHistory';
@@ -84,7 +85,7 @@ function AiChat() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const { user, loading: authLoading } = useAuthStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
 
   // Knowledge levels with descriptions and icons
@@ -359,23 +360,9 @@ function AiChat() {
     return modelId === 'deepseek/deepseek-chat';
   };
 
-  // Show loading state while auth is loading
-  if (authLoading) {
-    return (
-      <div className="flex flex-col h-full items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-full mb-6">
-            <Loader className="h-8 w-8 text-white animate-spin" />
-          </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Loading AI Chat</h2>
-          <p className="text-gray-600">Preparing your personalized Bitcoin learning experience...</p>
-        </motion.div>
-      </div>
-    );
+  // Show loading screen while initial data is being fetched
+  if (isLoading) {
+    return <LoadingScreen message="Initializing AI Bitcoin Tutor..." />;
   }
 
   // Welcome Screen Component
