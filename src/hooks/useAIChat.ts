@@ -117,8 +117,11 @@ export function useAIChat() {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        // Filter out Gemma models to prevent them from appearing
-        const filteredData = data.filter(model => model.model_id !== 'gemma-2b-it');
+        // Filter out old DeepSeek model IDs to prevent duplicates
+        const filteredData = data.filter(model => 
+          model.model_id !== 'deepseek/deepseek-chat-v3-0324:free' && // Old model ID
+          model.model_id !== 'gemma-2b-it' // Also filter out Gemma models
+        );
         
         const userModels: AIModel[] = filteredData.map(model => ({
           id: model.model_id,
