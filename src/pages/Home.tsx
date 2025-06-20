@@ -46,6 +46,13 @@ function Home() {
 
   const premiumFeatures = [
     {
+      icon: <Globe className="h-8 w-8" />,
+      title: "Resources",
+      description: "Access our curated collection of Bitcoin tools and educational materials.",
+      path: "/resources",
+      premium: true
+    },
+    {
       icon: <MessageSquare className="h-8 w-8" />,
       title: "Unlimited AI Chat",
       description: "Get unlimited personalized help from our advanced AI tutor, available 24/7.",
@@ -144,7 +151,10 @@ function Home() {
 
       {/* Features Grid */}
       <div className="mb-24">
-        <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Available Features</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Available Features</h2>
+        <p className="text-lg text-gray-600 mb-12 text-center max-w-2xl mx-auto">
+          Simply sign up with your email to gain instant access to our free features.
+        </p>
         
         {/* Free Features */}
         <div className="mb-12">
