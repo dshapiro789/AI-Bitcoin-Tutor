@@ -16,6 +16,7 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   restoreSession: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -139,6 +140,19 @@ export const useAuthStore = create<AuthState>((set) => ({
       console.error('Error restoring session:', err);
     } finally {
       set({ loading: false });
+    }
+  },
+
+  resetPassword: async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/account?password-reset=true`,
+      });
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error resetting password:', err);
+      throw err instanceof Error ? err : new Error('Failed to send password reset email');
     }
   }
 }));

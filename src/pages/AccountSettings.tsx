@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   CreditCard, User, Key, Crown, CheckCircle, 
   Calendar, AlertTriangle, ArrowRight, X, ExternalLink,
-  Receipt, Clock, Shield, Mail
+  Receipt, Clock, Shield, Mail, Loader
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
@@ -11,11 +11,24 @@ import { motion } from 'framer-motion';
 
 function AccountSettings() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuthStore();
+  const { user, signOut, resetPassword } = useAuthStore();
   const { subscription, cancelSubscription, createCustomerPortalSession } = useSubscriptionStore();
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Password reset state
+  const [passwordResetStatus, setPasswordResetStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [passwordResetMessage, setPasswordResetMessage] = useState<string>('');
+
+  // Calculate remaining days for subscription
+  const calculateRemainingDays = (endDate: string): number => {
+    const now = new Date();
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
 
   const handleCancelSubscription = async () => {
     try {
@@ -49,8 +62,32 @@ function AccountSettings() {
     }
   };
 
+  const handlePasswordReset = async () => {
+    if (!user?.email) {
+      setPasswordResetStatus('error');
+      setPasswordResetMessage('No email address found for your account');
+      return;
+    }
+
+    try {
+      setPasswordResetStatus('loading');
+      setPasswordResetMessage('');
+      
+      await resetPassword(user.email);
+      
+      setPasswordResetStatus('success');
+      setPasswordResetMessage('Password reset email sent! Please check your inbox and follow the instructions to reset your password.');
+    } catch (err) {
+      setPasswordResetStatus('error');
+      setPasswordResetMessage(err instanceof Error ? err.message : 'Failed to send password reset email');
+    }
+  };
+
   const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
   const isActiveUntilPeriodEnd = subscription?.status === 'active_until_period_end' || subscription?.cancelAtPeriodEnd;
+  
+  // Calculate remaining days for premium subscriptions
+  const remainingDays = subscription?.endDate ? calculateRemainingDays(subscription.endDate) : null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -128,11 +165,33 @@ function AccountSettings() {
                     )}
                   </div>
 
+                  {/* Subscription Details with Remaining Days */}
                   {subscription.endDate && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      {isActiveUntilPeriodEnd ? 'Expires on: ' : 'Next billing date: '}
-                      {new Date(subscription.endDate).toLocaleDateString()}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          {isActiveUntilPeriodEnd ? 'Expires on: ' : 'Next billing date: '}
+                          {new Date(subscription.endDate).toLocaleDateString()}
+                        </div>
+                        {remainingDays !== null && (
+                          <div className={`flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            remainingDays <= 7 
+                              ? 'bg-red-100 text-red-800' 
+                              : remainingDays <= 30 
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-green-100 text-green-800'
+                          }`}>
+                            <Clock className="h-3 w-3 mr-1" />
+                            {remainingDays === 0 
+                              ? 'Expires today' 
+                              : remainingDays === 1 
+                                ? '1 day remaining'
+                                : `${remainingDays} days remaining`
+                            }
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -247,13 +306,40 @@ function AccountSettings() {
             </h2>
             <div className="bg-gray-50 rounded-xl p-6">
               <p className="text-gray-600 mb-4">
-                Change your password to keep your account secure.
+                Change your password to keep your account secure. We'll send you a password reset link via email.
               </p>
+              
+              {/* Password Reset Status Messages */}
+              {passwordResetMessage && (
+                <div className={`mb-4 p-3 rounded-lg ${
+                  passwordResetStatus === 'success' 
+                    ? 'bg-green-50 border border-green-200 text-green-700' 
+                    : 'bg-red-50 border border-red-200 text-red-700'
+                }`}>
+                  <div className="flex items-start">
+                    {passwordResetStatus === 'success' ? (
+                      <CheckCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                    ) : (
+                      <AlertTriangle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                    )}
+                    <span className="text-sm">{passwordResetMessage}</span>
+                  </div>
+                </div>
+              )}
+
               <button
-                onClick={() => {/* Implement password reset */}}
-                className="px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium"
+                onClick={handlePasswordReset}
+                disabled={passwordResetStatus === 'loading'}
+                className="px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
-                Change Password
+                {passwordResetStatus === 'loading' ? (
+                  <>
+                    <Loader className="h-5 w-5 mr-2 animate-spin" />
+                    Sending Reset Email...
+                  </>
+                ) : (
+                  'Send Password Reset Email'
+                )}
               </button>
             </div>
           </div>
