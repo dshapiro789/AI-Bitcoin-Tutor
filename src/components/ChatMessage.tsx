@@ -76,7 +76,7 @@ export function ChatMessage({
     if (!contentRef.current || isUser) return;
 
     const codeBlocks = contentRef.current.querySelectorAll('pre code');
-    const addedButtons: HTMLButtonElement[] = [];
+    const addedButtons: { button: HTMLButtonElement; parent: HTMLPreElement }[] = [];
 
     codeBlocks.forEach((codeElement) => {
       const preElement = codeElement.parentElement as HTMLPreElement;
@@ -101,7 +101,7 @@ export function ChatMessage({
       copyIcon.setAttribute('stroke-width', '2');
       copyIcon.setAttribute('stroke-linecap', 'round');
       copyIcon.setAttribute('stroke-linejoin', 'round');
-      copyIcon.innerHTML = '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="m4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>';
+      copyIcon.innerHTML = '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="m4 16c-1.1 0-2-.9-2 V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>';
 
       // Create check icon SVG
       const checkIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -149,16 +149,17 @@ export function ChatMessage({
       });
 
       preElement.appendChild(copyButton);
-      addedButtons.push(copyButton);
+      addedButtons.push({ button: copyButton, parent: preElement });
     });
 
     // Cleanup function
     return () => {
-      addedButtons.forEach(button => {
-        if (button.parentElement) {
-          button.parentElement.removeChild(button);
-          button.parentElement.style.position = '';
-          button.parentElement.classList.remove('group');
+      addedButtons.forEach(({ button, parent }) => {
+        // Store parent reference before removing button
+        if (parent && parent.contains(button)) {
+          parent.removeChild(button);
+          parent.style.position = '';
+          parent.classList.remove('group');
         }
       });
     };

@@ -7,7 +7,7 @@ import {
   Search, Filter, Settings, Send, RefreshCw, Brain,
   Sparkles, Clock, Download, Mic, MicOff, ChevronDown,
   ChevronUp, Trash2, MessageSquare, Volume2, VolumeX,
-  Save, Upload, History, FileText, Plus
+  Save, Upload, History, FileText, Plus, ArrowUp
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
@@ -46,6 +46,7 @@ function AiChat() {
   const [showAddModel, setShowAddModel] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [modelToDelete, setModelToDelete] = useState<string | null>(null);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
   
   // New model form state
   const [newModelId, setNewModelId] = useState('');
@@ -58,6 +59,7 @@ function AiChat() {
   const [newModelMaxTokens, setNewModelMaxTokens] = useState(1000);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
@@ -102,8 +104,43 @@ function AiChat() {
     }
   }, [chatError]);
 
+  // Scroll event listener for showing/hiding scroll-to-top button
+  useEffect(() => {
+    const messagesContainer = messagesContainerRef.current;
+    if (!messagesContainer) return;
+
+    const handleScroll = () => {
+      const scrollTop = messagesContainer.scrollTop;
+      const scrollHeight = messagesContainer.scrollHeight;
+      const clientHeight = messagesContainer.clientHeight;
+      
+      // Show button when scrolled down more than 300px from top
+      // or when there's more than 20% of content above the current view
+      const scrolledFromTop = scrollTop > 300;
+      const significantContentAbove = scrollTop > (scrollHeight - clientHeight) * 0.2;
+      
+      setShowScrollToTop(scrolledFromTop || significantContentAbove);
+    };
+
+    messagesContainer.addEventListener('scroll', handleScroll);
+    
+    // Initial check
+    handleScroll();
+
+    return () => {
+      messagesContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToTop = () => {
+    messagesContainerRef.current?.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -664,7 +701,10 @@ function AiChat() {
       </AnimatePresence>
 
       {/* Messages Container - Now with bottom padding for mobile fixed input */}
-      <div className="flex-1 bg-gradient-to-br from-gray-50 to-orange-50 overflow-y-auto p-4 space-y-4 pb-32 md:pb-4">
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 bg-gradient-to-br from-gray-50 to-orange-50 overflow-y-auto p-4 space-y-4 pb-32 md:pb-4 relative"
+      >
         {filteredMessages.map((message) => (
           <div key={message.id} className="relative group">
             <ChatMessage
@@ -779,6 +819,24 @@ function AiChat() {
           </motion.div>
         )}
         <div ref={messagesEndRef} />
+
+        {/* Floating Scroll to Top Button */}
+        <AnimatePresence>
+          {showScrollToTop && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={scrollToTop}
+              className="fixed bottom-20 right-6 md:bottom-6 md:right-6 z-51 p-3 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-800 transition-all duration-200 hover:shadow-xl"
+              title="Scroll to top"
+            >
+              <ArrowUp className="h-5 w-5" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Input Section - Fixed at bottom on mobile, normal on desktop */}
