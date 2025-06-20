@@ -32,9 +32,10 @@ export function useAIChat() {
       timestamp: new Date(),
       quickReplies: [
         "What is Bitcoin?",
-        "How does mining work?",
-        "Explain Lightning Network",
-        "Bitcoin vs Altcoins"
+        "How does the Bitcoin blockchain work?",
+        "What is a Bitcoin wallet and how do I use one?",
+        "Why is Bitcoin considered 'sound money'?",
+        "Explain the Lightning Network"
       ]
     }
   ]);
@@ -279,9 +280,10 @@ export function useAIChat() {
         timestamp: new Date(),
         quickReplies: [
           "What is Bitcoin?",
-          "How does mining work?",
-          "Explain Lightning Network",
-          "Bitcoin vs Altcoins"
+          "How does the Bitcoin blockchain work?",
+          "What is a Bitcoin wallet and how do I use one?",
+          "Why is Bitcoin considered 'sound money'?",
+          "Explain the Lightning Network"
         ]
       }]);
     } catch (err) {
@@ -368,12 +370,149 @@ export function useAIChat() {
     return 'explanation';
   };
 
+  // Enhanced quick replies generation with more intelligent topic detection
   const generateQuickReplies = (response: string): string[] => {
-    const topics = response.match(/\b(Bitcoin|blockchain|mining|Lightning Network|wallet|node|transaction)\b/g);
-    if (!topics) return [];
+    const quickReplies: string[] = [];
+    const responseText = response.toLowerCase();
+    
+    // Define Bitcoin concepts and their related follow-up questions
+    const bitcoinConcepts = {
+      'bitcoin': [
+        'How does Bitcoin compare to traditional money?',
+        'What makes Bitcoin unique?',
+        'How do I get started with Bitcoin?'
+      ],
+      'blockchain': [
+        'How does blockchain ensure security?',
+        'What is a block in the blockchain?',
+        'How are transactions verified?'
+      ],
+      'mining': [
+        'What equipment is needed for mining?',
+        'How does mining difficulty work?',
+        'What is the mining reward?'
+      ],
+      'wallet': [
+        'What are the different types of wallets?',
+        'How do I secure my wallet?',
+        'What is a seed phrase?'
+      ],
+      'private key': [
+        'How do I keep my private keys safe?',
+        'What happens if I lose my private key?',
+        'What is the difference between private and public keys?'
+      ],
+      'lightning network': [
+        'How do Lightning channels work?',
+        'What are the benefits of Lightning Network?',
+        'How do I use Lightning payments?'
+      ],
+      'transaction': [
+        'How long do transactions take?',
+        'What are transaction fees?',
+        'How can I track my transaction?'
+      ],
+      'node': [
+        'How do I run a Bitcoin node?',
+        'What is the difference between full and light nodes?',
+        'Why should I run my own node?'
+      ],
+      'halving': [
+        'When is the next Bitcoin halving?',
+        'How does halving affect the price?',
+        'What happens to miners during halving?'
+      ],
+      'satoshi': [
+        'Who is Satoshi Nakamoto?',
+        'What is a satoshi unit?',
+        'How many satoshis are in a Bitcoin?'
+      ],
+      'proof of work': [
+        'How does Proof of Work secure Bitcoin?',
+        'What is the energy consumption of Bitcoin?',
+        'Why is Proof of Work important?'
+      ],
+      'multisig': [
+        'How does multisig improve security?',
+        'What are common multisig setups?',
+        'How do I create a multisig wallet?'
+      ],
+      'cold storage': [
+        'What is the best cold storage method?',
+        'How do I set up cold storage?',
+        'What are hardware wallets?'
+      ],
+      'exchange': [
+        'How do I choose a Bitcoin exchange?',
+        'What are the risks of keeping Bitcoin on exchanges?',
+        'How do I withdraw Bitcoin from an exchange?'
+      ],
+      'volatility': [
+        'Why is Bitcoin volatile?',
+        'How can I manage Bitcoin volatility?',
+        'What affects Bitcoin price?'
+      ],
+      'regulation': [
+        'How do governments regulate Bitcoin?',
+        'Is Bitcoin legal in my country?',
+        'What are the tax implications of Bitcoin?'
+      ],
+      'scalability': [
+        'How does Bitcoin handle scalability?',
+        'What are second-layer solutions?',
+        'How many transactions can Bitcoin process?'
+      ],
+      'fork': [
+        'What is a Bitcoin fork?',
+        'What was the Bitcoin Cash fork about?',
+        'How do forks affect my Bitcoin?'
+      ],
+      'consensus': [
+        'How does Bitcoin achieve consensus?',
+        'What happens when nodes disagree?',
+        'How are protocol changes made?'
+      ],
+      'inflation': [
+        'How does Bitcoin protect against inflation?',
+        'What is Bitcoin\'s monetary policy?',
+        'Why is the 21 million limit important?'
+      ]
+    };
 
-    const uniqueTopics = Array.from(new Set(topics));
-    return uniqueTopics.map(topic => `Tell me more about ${topic}`).slice(0, 3);
+    // Find relevant concepts in the response
+    const foundConcepts: string[] = [];
+    for (const [concept, questions] of Object.entries(bitcoinConcepts)) {
+      if (responseText.includes(concept)) {
+        foundConcepts.push(concept);
+      }
+    }
+
+    // Generate quick replies based on found concepts
+    foundConcepts.slice(0, 3).forEach(concept => {
+      const conceptQuestions = bitcoinConcepts[concept as keyof typeof bitcoinConcepts];
+      if (conceptQuestions && conceptQuestions.length > 0) {
+        // Pick a random question from the concept's questions
+        const randomQuestion = conceptQuestions[Math.floor(Math.random() * conceptQuestions.length)];
+        if (!quickReplies.includes(randomQuestion)) {
+          quickReplies.push(randomQuestion);
+        }
+      }
+    });
+
+    // If no specific concepts found, provide general follow-up questions
+    if (quickReplies.length === 0) {
+      const generalQuestions = [
+        'Can you explain this in simpler terms?',
+        'What are the practical implications?',
+        'How does this relate to everyday use?',
+        'What should beginners know about this?',
+        'Are there any risks I should be aware of?'
+      ];
+      quickReplies.push(...generalQuestions.slice(0, 3));
+    }
+
+    // Ensure we don't exceed 4 quick replies and they're unique
+    return [...new Set(quickReplies)].slice(0, 4);
   };
 
   const sendMessage = async (text: string, model: AIModel) => {

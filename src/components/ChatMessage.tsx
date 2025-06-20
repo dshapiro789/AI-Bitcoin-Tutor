@@ -197,14 +197,19 @@ export function ChatMessage({
           </div>
         </div>
 
-        {/* Message Content */}
+        {/* Message Content - Fixed text cutoff with proper overflow handling */}
         <div 
           ref={contentRef}
-          className={`prose prose-lg break-words ${
+          className={`prose prose-lg break-words overflow-x-hidden ${
             isUser 
               ? 'prose-invert text-white' 
               : 'text-gray-800'
           }`}
+          style={{ 
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            hyphens: 'auto'
+          }}
           dangerouslySetInnerHTML={{ __html: formatText(text) }}
         />
 
@@ -215,7 +220,11 @@ export function ChatMessage({
               <button
                 key={index}
                 onClick={() => onQuickReply(reply)}
-                className="px-3 py-1.5 text-sm bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200 transition-colors truncate max-w-[200px]"
+                className="px-3 py-1.5 text-sm bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200 transition-colors break-words max-w-full"
+                style={{ 
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word'
+                }}
               >
                 {reply}
               </button>
