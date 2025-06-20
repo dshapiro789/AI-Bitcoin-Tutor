@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   CreditCard, MessageSquare, Globe, Menu, X,
-  LogIn, Crown, User
+  LogIn, Crown, User, MessageCircle
 } from 'lucide-react';
 import { BitcoinLogo } from './BitcoinLogo';
 import { useAuthStore } from '../store/authStore';
@@ -50,6 +50,13 @@ function Navbar() {
       text: 'AI Chat',
       premium: false,
       public: false
+    },
+    {
+      to: '/contact',
+      icon: <MessageCircle />,
+      text: 'Contact',
+      premium: false,
+      public: true
     }
   ];
 
