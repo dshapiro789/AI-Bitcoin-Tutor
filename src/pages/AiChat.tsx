@@ -8,7 +8,7 @@ import {
   Sparkles, Clock, ChevronDown,
   ChevronUp, Trash2, MessageSquare, 
   Save, Upload, History, FileText, Plus, ArrowUp,
-  GraduationCap, BookOpen, Zap, Target, Award, Share2
+  GraduationCap, BookOpen, Zap, Target, Award, Share2, Loader
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
@@ -84,7 +84,7 @@ function AiChat() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuthStore();
+  const { user, loading: authLoading } = useAuthStore();
   const navigate = useNavigate();
 
   // Knowledge levels with descriptions and icons
@@ -358,6 +358,25 @@ function AiChat() {
   const isDefaultModel = (modelId: string) => {
     return modelId === 'deepseek/deepseek-chat';
   };
+
+  // Show loading state while auth is loading
+  if (authLoading) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-full mb-6">
+            <Loader className="h-8 w-8 text-white animate-spin" />
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Loading AI Chat</h2>
+          <p className="text-gray-600">Preparing your personalized Bitcoin learning experience...</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   // Welcome Screen Component
   const WelcomeScreen = () => (
