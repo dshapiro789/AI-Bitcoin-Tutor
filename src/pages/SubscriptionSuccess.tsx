@@ -78,10 +78,6 @@ function SubscriptionSuccess() {
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-            Voice Input & Text-to-Speech
-          </div>
-          <div className="flex items-center text-sm text-gray-600">
-            <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
             Advanced Bitcoin Education
           </div>
           <div className="flex items-center text-sm text-gray-600">

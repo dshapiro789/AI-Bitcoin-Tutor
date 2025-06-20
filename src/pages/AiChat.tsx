@@ -5,15 +5,14 @@ import {
   CreditCard, Bot, Key, Crown, CheckCircle, 
   Calendar, AlertTriangle, ArrowRight, X, Menu,
   Search, Filter, Settings, Send, RefreshCw, Brain,
-  Sparkles, Clock, Download, Mic, MicOff, ChevronDown,
-  ChevronUp, Trash2, MessageSquare, Volume2, VolumeX,
+  Sparkles, Clock, Download, ChevronDown,
+  ChevronUp, Trash2, MessageSquare, 
   Save, Upload, History, FileText, Plus, ArrowUp
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
 import { ChatMessage } from '../components/ChatMessage';
 import { useAIChat } from '../hooks/useAIChat';
-import { useVoice } from '../hooks/useVoice';
 
 function AiChat() {
   const {
@@ -62,37 +61,6 @@ function AiChat() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthStore();
   const navigate = useNavigate();
-
-  const {
-    isListening,
-    isSpeaking,
-    isSupported,
-    startListening,
-    stopListening,
-    speak,
-    stopSpeaking
-  } = useVoice({
-    onResult: (transcript) => {
-      setInput(transcript);
-      // Auto-submit after voice input
-      setTimeout(() => {
-        if (transcript.trim()) {
-          handleSubmit(new Event('submit') as any);
-        }
-      }, 500);
-    },
-    onError: (error) => {
-      console.error('Voice error:', error);
-      setError('Voice input error: ' + error);
-      setTimeout(() => setError(null), 3000);
-    },
-    onStart: () => {
-      setError(null);
-    },
-    onEnd: () => {
-      // Clear any temporary error messages when voice input ends
-    }
-  });
 
   useEffect(() => {
     scrollToBottom();
@@ -167,25 +135,6 @@ function AiChat() {
   const handleQuickReply = (reply: string) => {
     setInput(reply);
     handleSubmit(new Event('submit') as any);
-  };
-
-  const handleVoiceToggle = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      if (isSpeaking) {
-        stopSpeaking();
-      }
-      startListening();
-    }
-  };
-
-  const handleSpeakToggle = (text: string) => {
-    if (isSpeaking) {
-      stopSpeaking();
-    } else {
-      speak(text);
-    }
   };
 
   const handleClearHistory = async () => {
@@ -299,15 +248,12 @@ function AiChat() {
     return true;
   });
 
-  // Dynamic placeholder text based on voice state
+  // Dynamic placeholder text
   const getPlaceholderText = () => {
-    if (isListening) {
-      return "🎤 Listening... Speak now!";
-    }
     if (isProcessing) {
       return "Processing your message...";
     }
-    return isPremium ? "Ask anything about Bitcoin..." : "Ask anything about Bitcoin (voice input available)";
+    return "Ask anything about Bitcoin...";
   };
 
   // Check if a model is the default model (cannot be deleted)
@@ -713,20 +659,6 @@ function AiChat() {
               isPremium={isPremium}
               onQuickReply={handleQuickReply}
             />
-            {/* Add speak button for AI messages */}
-            {!message.isUser && isSupported && (
-              <button
-                onClick={() => handleSpeakToggle(message.text)}
-                className="absolute top-2 right-2 p-2 rounded-lg bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-50"
-                title={isSpeaking ? "Stop speaking" : "Read aloud"}
-              >
-                {isSpeaking ? (
-                  <VolumeX className="h-4 w-4 text-gray-600" />
-                ) : (
-                  <Volume2 className="h-4 w-4 text-gray-600" />
-                )}
-              </button>
-            )}
           </div>
         ))}
 
@@ -899,38 +831,6 @@ function AiChat() {
             >
               <Search className="h-5 w-5" />
             </button>
-
-            {isSupported && (
-              <motion.button
-                type="button"
-                onClick={handleVoiceToggle}
-                className={`p-3 rounded-xl transition-all duration-200 relative ${
-                  isListening
-                    ? 'bg-orange-500 text-white shadow-lg scale-110'
-                    : 'text-gray-500 hover:bg-gray-100'
-                }`}
-                whileTap={{ scale: 0.95 }}
-                title={isListening ? "Stop listening" : "Start voice input"}
-              >
-                {isListening ? (
-                  <>
-                    <MicOff className="h-5 w-5" />
-                    <motion.div
-                      className="absolute inset-0 rounded-xl border-2 border-orange-300"
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ repeat: Infinity, duration: 1.5 }}
-                    />
-                  </>
-                ) : (
-                  <Mic className="h-5 w-5" />
-                )}
-                {isListening && (
-                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs text-orange-600 font-medium whitespace-nowrap">
-                    Listening...
-                  </span>
-                )}
-              </motion.button>
-            )}
           </div>
 
           <div className="flex-1 relative">
@@ -939,22 +839,9 @@ function AiChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={getPlaceholderText()}
-              className={`w-full px-4 py-3 text-base border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 shadow-sm hover:shadow-md ${
-                isListening 
-                  ? 'border-orange-300 bg-orange-50 placeholder-orange-500' 
-                  : 'border-gray-200'
-              }`}
-              disabled={isProcessing || isListening}
+              className="w-full px-4 py-3 text-base border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 shadow-sm hover:shadow-md border-gray-200"
+              disabled={isProcessing}
             />
-            {isListening && (
-              <motion.div
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 1 }}
-              >
-                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-              </motion.div>
-            )}
           </div>
 
           <div className="flex items-center space-x-2">
@@ -967,7 +854,7 @@ function AiChat() {
 
             <button
               type="submit"
-              disabled={isProcessing || !input.trim() || isListening}
+              disabled={isProcessing || !input.trim()}
               className="px-4 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-medium shadow-sm hover:shadow-md"
             >
               <Send className="h-5 w-5" />
@@ -985,27 +872,6 @@ function AiChat() {
             </div>
           </div>
         )}
-
-        {/* Voice input status indicator */}
-        <AnimatePresence>
-          {isListening && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="flex justify-center mt-2"
-            >
-              <div className="flex items-center space-x-2 px-4 py-2 bg-orange-50 text-orange-700 rounded-full border border-orange-200">
-                <motion.div
-                  className="w-2 h-2 bg-orange-500 rounded-full"
-                  animate={{ scale: [1, 1.5, 1] }}
-                  transition={{ repeat: Infinity, duration: 1 }}
-                />
-                <span className="text-sm font-medium">Listening for your voice...</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* Clear History Confirmation Modal */}

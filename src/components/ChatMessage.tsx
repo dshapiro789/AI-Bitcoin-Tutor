@@ -101,7 +101,7 @@ export function ChatMessage({
       copyIcon.setAttribute('stroke-width', '2');
       copyIcon.setAttribute('stroke-linecap', 'round');
       copyIcon.setAttribute('stroke-linejoin', 'round');
-      copyIcon.innerHTML = '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="m4 16c-1.1 0-2-.9-2 V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>';
+      copyIcon.innerHTML = '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="m4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>';
 
       // Create check icon SVG
       const checkIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

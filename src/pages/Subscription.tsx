@@ -14,7 +14,6 @@ const plans = [
     interval: 'month',
     features: [
       'Unlimited Access to AI Chatbot',
-      'Voice Input & Text-to-Speech',
       'Advanced Bitcoin Education',
       'Priority Support',
       'Early Access to New Features'
