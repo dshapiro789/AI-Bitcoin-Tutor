@@ -65,7 +65,7 @@ Remember: You are here to educate about Bitcoin specifically. Stay focused, be h
 // Default model configurations - DeepSeek V3 with environment API key
 export const defaultModels: AIModel[] = [
   {
-    id: 'deepseek/deepseek-chat-v3-0324:free',
+    id: 'deepseek/deepseek-chat',
     name: 'DeepSeek V3',
     provider: 'OpenRouter',
     apiKeyRequired: false, // API key comes from environment
@@ -98,34 +98,66 @@ export class AIService {
       throw new Error('No model selected');
     }
 
+    if (!this.currentModel.apiKey) {
+      throw new Error('API key is missing. Please check your configuration.');
+    }
+
     // Use the appropriate endpoint based on the model
     const endpoint = this.currentModel.apiEndpoint || 'https://openrouter.ai/api/v1';
     
-    const response = await fetch(`${endpoint}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.currentModel.apiKey}`,
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'AI Bitcoin Tutor'
-      },
-      body: JSON.stringify({
-        model: this.currentModel.id,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: text }
-        ],
-        temperature: this.currentModel.temperature || 0.7,
-        max_tokens: this.currentModel.maxTokens || 4096
-      })
-    });
+    try {
+      const response = await fetch(`${endpoint}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.currentModel.apiKey}`,
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'AI Bitcoin Tutor'
+        },
+        body: JSON.stringify({
+          model: this.currentModel.id,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: text }
+          ],
+          temperature: this.currentModel.temperature || 0.7,
+          max_tokens: this.currentModel.maxTokens || 2000,
+          stream: false
+        })
+      });
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.statusText}`);
+      if (!response.ok) {
+        let errorMessage = `API error (${response.status})`;
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.error?.message) {
+            errorMessage += `: ${errorData.error.message}`;
+          } else if (errorData.message) {
+            errorMessage += `: ${errorData.message}`;
+          } else {
+            errorMessage += `: ${response.statusText || 'Unknown error'}`;
+          }
+        } catch {
+          errorMessage += `: ${response.statusText || 'Unknown error'}`;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response format from API');
+      }
+      
+      return data.choices[0].message.content || 'No response received';
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Network error: Unable to connect to AI service');
     }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || 'No response received';
   }
 }
 
