@@ -853,7 +853,7 @@ function AiChat() {
         )}
         <div ref={messagesEndRef} />
 
-        {/* Floating Scroll to Top Button */}
+        {/* Floating Scroll to Top Button - Improved positioning */}
         <AnimatePresence>
           {showScrollToTop && (
             <motion.button
@@ -863,7 +863,7 @@ function AiChat() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={scrollToTop}
-              className="fixed bottom-20 right-6 md:bottom-6 md:right-6 z-51 p-3 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-800 transition-all duration-200 hover:shadow-xl"
+              className="fixed bottom-32 right-6 md:bottom-24 md:right-6 z-50 p-3 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-800 transition-all duration-200 hover:shadow-xl"
               title="Scroll to top"
             >
               <ArrowUp className="h-5 w-5" />
