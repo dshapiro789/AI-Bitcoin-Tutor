@@ -730,35 +730,66 @@ function AiChat() {
           </div>
         ))}
 
-        {/* Enhanced Thinking Indicator */}
+        {/* Enhanced AI Thinking Indicator */}
         {isProcessing && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
             className="flex justify-start"
           >
-            <div className="bg-white text-gray-800 p-6 rounded-2xl shadow-lg max-w-[85%] space-y-4">
+            <div className="bg-white text-gray-800 p-6 rounded-2xl shadow-lg max-w-[85%] space-y-4 border border-gray-100">
+              {/* Header with Brain Icon */}
               <div className="flex items-center text-gray-600 space-x-3">
                 <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  animate={{ 
+                    rotate: 360,
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    rotate: { duration: 3, repeat: Infinity, ease: "linear" },
+                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                  className="relative"
                 >
                   <Brain className="h-6 w-6 text-orange-500" />
+                  {/* Subtle glow effect */}
+                  <motion.div
+                    animate={{ 
+                      opacity: [0.3, 0.7, 0.3],
+                      scale: [1, 1.3, 1]
+                    }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                    className="absolute inset-0 bg-orange-400 rounded-full blur-sm -z-10"
+                  />
                 </motion.div>
                 <span className="text-lg font-medium">AI is thinking...</span>
               </div>
               
+              {/* Current Process Display */}
               {currentThoughts && (
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
                   className="relative"
                 >
                   <div className="flex items-center space-x-2 mb-2">
                     <motion.div
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
+                      animate={{ 
+                        scale: [1, 1.2, 1],
+                        opacity: [0.6, 1, 0.6]
+                      }}
+                      transition={{ 
+                        duration: 1.5, 
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
                       className="w-2 h-2 bg-orange-400 rounded-full"
                     />
                     <span className="text-sm font-medium text-orange-600">Current Process</span>
@@ -766,9 +797,9 @@ function AiChat() {
                   <div className="text-base text-gray-600 italic border-l-3 border-orange-200 pl-4 bg-orange-50 p-3 rounded-r-lg">
                     <motion.span
                       key={currentThoughts}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
                     >
                       {currentThoughts}
                     </motion.span>
@@ -776,19 +807,21 @@ function AiChat() {
                 </motion.div>
               )}
               
-              {/* Progress dots */}
-              <div className="flex items-center space-x-1">
+              {/* Progress Dots - Refined Animation */}
+              <div className="flex items-center justify-center space-x-1">
                 {[0, 1, 2].map((i) => (
                   <motion.div
                     key={i}
                     animate={{ 
-                      scale: [1, 1.3, 1],
-                      opacity: [0.3, 1, 0.3]
+                      scale: [1, 1.4, 1],
+                      opacity: [0.4, 1, 0.4],
+                      y: [0, -4, 0]
                     }}
                     transition={{ 
-                      duration: 1.5, 
+                      duration: 1.8, 
                       repeat: Infinity,
-                      delay: i * 0.2
+                      delay: i * 0.3,
+                      ease: "easeInOut"
                     }}
                     className="w-2 h-2 bg-orange-400 rounded-full"
                   />
