@@ -417,9 +417,11 @@ function AiChat() {
           transition={{ delay: 0.8 }}
           className="text-center"
         >
-          <p className="text-gray-500 text-sm">
-            Don't worry - you can always change your knowledge level later in the settings.
-          </p>
+          <div className="inline-block p-4 bg-orange-100 rounded-lg border-2 border-orange-200 shadow-sm">
+            <p className="text-orange-700 text-base font-semibold">
+              💡 Don't worry - you can always change your knowledge level later in the settings.
+            </p>
+          </div>
         </motion.div>
       </motion.div>
     </div>
