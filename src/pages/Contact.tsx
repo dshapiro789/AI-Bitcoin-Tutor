@@ -329,6 +329,9 @@ function Contact() {
                 </motion.div>
               )}
             </div>
+            <p className="mt-2 text-orange-100">
+              Share your conversation or export it for your records
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
@@ -582,10 +585,10 @@ function Contact() {
               For urgent issues or direct communication, you can also reach us at:
             </p>
             <a 
-              href="mailto:support@aibitcointutor.com"
+              href="mailto:aibitcointutor@gmail.com"
               className="inline-flex items-center text-orange-500 hover:text-orange-600 font-medium"
             >
-              support@aibitcointutor.com
+              aibitcointutor@gmail.com
               <ExternalLink className="h-4 w-4 ml-1" />
             </a>
           </div>

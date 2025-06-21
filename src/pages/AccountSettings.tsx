@@ -55,7 +55,7 @@ function AccountSettings() {
       
       // If it's a configuration error, show a more helpful message
       if (errorMessage.includes('temporarily unavailable')) {
-        setError('The billing portal is currently being set up. Please contact support at support@aibitcointutor.com for assistance with your subscription.');
+        setError('The billing portal is currently being set up. Please contact support at aibitcointutor@gmail.com for assistance with your subscription.');
       }
     } finally {
       setLoading(false);
@@ -291,7 +291,7 @@ function AccountSettings() {
                   </div>
                   <p className="text-sm text-blue-700">
                     If you need assistance with billing or have questions about your subscription, 
-                    contact us at <a href="mailto:support@aibitcointutor.com" className="underline">support@aibitcointutor.com</a>
+                    contact us at <a href="mailto:aibitcointutor@gmail.com" className="underline">aibitcointutor@gmail.com</a>
                   </p>
                 </div>
               </div>
@@ -353,7 +353,7 @@ function AccountSettings() {
                   <span className="block">{error}</span>
                   {error.includes('contact support') && (
                     <a 
-                      href="mailto:support@aibitcointutor.com" 
+                      href="mailto:aibitcointutor@gmail.com" 
                       className="text-red-600 underline hover:text-red-800 text-sm mt-1 inline-block"
                     >
                       Contact Support →
