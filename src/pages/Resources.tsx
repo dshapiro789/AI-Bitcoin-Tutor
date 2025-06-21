@@ -297,13 +297,16 @@ function Resources() {
 
   const allTags = CORE_TAGS;
 
-  const filteredResources = resources.filter(resource => {
-    const matchesSearch = resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === 'all' || resource.type === selectedType;
-    const matchesTag = selectedTag === 'all' || resource.tags.includes(selectedTag);
-    return matchesSearch && matchesType && matchesTag;
-  });
+  // Filter and sort resources alphabetically by name
+  const filteredResources = resources
+    .filter(resource => {
+      const matchesSearch = resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           resource.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = selectedType === 'all' || resource.type === selectedType;
+      const matchesTag = selectedTag === 'all' || resource.tags.includes(selectedTag);
+      return matchesSearch && matchesType && matchesTag;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
 
   const resourceTypes = [
     { value: 'all', label: 'All Types' },
