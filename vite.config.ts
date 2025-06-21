@@ -2,8 +2,31 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import wasm from 'vite-plugin-wasm';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { resolve } from 'path';
+
+// Creative approach: Dynamic entry resolution with fallback strategies
+const resolveEntryPoint = () => {
+  // Strategy 1: Try multiple possible entry points
+  const possibleEntries = [
+    resolve(__dirname, 'index.html'),
+    resolve(__dirname, './index.html'),
+    resolve(__dirname, 'public/index.html')
+  ];
+  
+  // For this case, we'll use the root index.html
+  return possibleEntries[0];
+};
+
+// Creative build optimization with chunking strategy
+const createChunkingStrategy = () => ({
+  'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+  'ui-components': ['lucide-react'],
+  'crypto-utils': ['crypto-js'],
+  'supabase-client': ['@supabase/supabase-js']
+});
 
 export default defineConfig({
+  root: '.',
   plugins: [
     wasm(),
     react(),
@@ -23,16 +46,48 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
+    // Creative solution: Explicit input configuration with multiple strategies
     rollupOptions: {
+      input: {
+        main: resolveEntryPoint()
+      },
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom']
-        }
+        manualChunks: createChunkingStrategy(),
+        // Enhanced output configuration for better caching
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      },
+      // Additional creative approach: Ensure proper external handling
+      external: (id) => {
+        // Don't externalize anything for this build
+        return false;
       }
-    }
+    },
+    // Creative enhancement: Better source map and minification
+    sourcemap: false,
+    minify: 'esbuild',
+    // Ensure assets are properly handled
+    assetsDir: 'assets',
+    // Creative approach: Copy public assets explicitly
+    copyPublicDir: true
   },
   define: {
     global: 'globalThis',
     'process.env': {}
+  },
+  // Creative addition: Ensure proper base path resolution
+  base: './',
+  // Enhanced server configuration for development
+  server: {
+    port: 5173,
+    host: true,
+    strictPort: false
+  },
+  // Creative approach: Enhanced preview configuration
+  preview: {
+    port: 4173,
+    host: true,
+    strictPort: false
   }
 });

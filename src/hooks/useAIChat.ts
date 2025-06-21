@@ -536,7 +536,7 @@ What would you like to learn about today?`,
       .filter(msg => msg.id !== '1') // Exclude welcome message
       .map(msg => {
         const timestamp = msg.timestamp.toLocaleString();
-        const sender = msg.isUser ? 'You' : `AI (${msg.model || 'Assistant'})`;
+        const sender = msg.isUser ? 'You' : `AI Assistant${msg.model ? ` (${msg.model})` : ''}`;
         return `[${timestamp}] ${sender}:\n${msg.text}\n`;
       })
       .join('\n');

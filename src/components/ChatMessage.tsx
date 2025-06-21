@@ -100,7 +100,7 @@ export function ChatMessage({
       copyIcon.innerHTML = '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="m4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>';
 
       // Create check icon SVG
-      const checkIcon =document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const checkIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       checkIcon.setAttribute('width', '14');
       checkIcon.setAttribute('height', '14');
       checkIcon.setAttribute('viewBox', '0 0 24 24');
