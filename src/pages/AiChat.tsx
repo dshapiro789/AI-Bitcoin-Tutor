@@ -8,7 +8,7 @@ import {
   Sparkles, Clock, ChevronDown,
   ChevronUp, Trash2, MessageSquare, 
   Save, Upload, History, FileText, Plus, ArrowUp,
-  GraduationCap, BookOpen, Zap, Target, Award, Share2
+  GraduationCap, BookOpen, Zap, Target, Award, Share2, Info
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
@@ -424,14 +424,27 @@ function AiChat() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-center"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+          className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mx-auto max-w-2xl shadow-lg"
         >
-          <p className="text-gray-500 text-sm">
-            Don't worry - you can always change your knowledge level later in the settings.
-          </p>
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                <Info className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                Flexible Learning Path
+              </h3>
+              <p className="text-blue-800 font-medium">
+                Don't worry - you can always change your knowledge level later in the settings. 
+                Your learning journey is completely customizable!
+              </p>
+            </div>
+          </div>
         </motion.div>
       </motion.div>
     </div>
