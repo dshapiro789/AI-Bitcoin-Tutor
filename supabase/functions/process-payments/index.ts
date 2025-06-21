@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       customerId = customer.id
     }
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session with promotion codes enabled
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
         'payment_method_types[0]': 'card',
         'line_items[0][price]': priceId,
         'line_items[0][quantity]': '1',
-        'allow_promotion_codes': 'true',
+        'allow_promotion_codes': 'true', // Enable promotion codes
         'billing_address_collection': 'required',
         'success_url': `${req.headers.get('origin') || 'https://aibitcointutor.com'}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
         'cancel_url': `${req.headers.get('origin') || 'https://aibitcointutor.com'}/subscription`,

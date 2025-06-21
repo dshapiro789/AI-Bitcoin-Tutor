@@ -13,10 +13,18 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log('=== STRIPE WEBHOOK RECEIVED ===')
+    
     // Get environment variables
     const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    console.log('Environment check:', {
+      hasWebhookSecret: !!stripeWebhookSecret,
+      hasSupabaseUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey
+    })
 
     if (!stripeWebhookSecret || !supabaseUrl || !supabaseServiceKey) {
       throw new Error('Missing required environment variables')
@@ -26,6 +34,12 @@ Deno.serve(async (req) => {
     const body = await req.text()
     const signature = req.headers.get('stripe-signature')
 
+    console.log('Request details:', {
+      hasBody: !!body,
+      hasSignature: !!signature,
+      bodyLength: body.length
+    })
+
     if (!signature) {
       throw new Error('Missing Stripe signature')
     }
@@ -33,12 +47,17 @@ Deno.serve(async (req) => {
     // Verify the webhook signature
     const isValidSignature = await verifyStripeSignature(body, signature, stripeWebhookSecret)
     if (!isValidSignature) {
+      console.error('Invalid webhook signature')
       throw new Error('Invalid webhook signature')
     }
 
     // Parse the event
     const event = JSON.parse(body)
-    console.log('Received Stripe webhook event:', event.type)
+    console.log('Stripe event received:', {
+      type: event.type,
+      id: event.id,
+      created: event.created
+    })
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
@@ -46,32 +65,40 @@ Deno.serve(async (req) => {
     // Handle different event types
     switch (event.type) {
       case 'checkout.session.completed':
+        console.log('Processing checkout.session.completed')
         await handleCheckoutSessionCompleted(event.data.object, supabase)
         break
       
       case 'customer.subscription.created':
+        console.log('Processing customer.subscription.created')
         await handleSubscriptionCreated(event.data.object, supabase)
         break
       
       case 'customer.subscription.updated':
+        console.log('Processing customer.subscription.updated')
         await handleSubscriptionUpdated(event.data.object, supabase)
         break
       
       case 'customer.subscription.deleted':
+        console.log('Processing customer.subscription.deleted')
         await handleSubscriptionDeleted(event.data.object, supabase)
         break
       
       case 'invoice.payment_succeeded':
+        console.log('Processing invoice.payment_succeeded')
         await handlePaymentSucceeded(event.data.object, supabase)
         break
       
       case 'invoice.payment_failed':
+        console.log('Processing invoice.payment_failed')
         await handlePaymentFailed(event.data.object, supabase)
         break
       
       default:
         console.log(`Unhandled event type: ${event.type}`)
     }
+
+    console.log('=== WEBHOOK PROCESSING COMPLETE ===')
 
     return new Response(
       JSON.stringify({ received: true }),
@@ -81,7 +108,8 @@ Deno.serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Webhook error:', error)
+    console.error('=== WEBHOOK ERROR ===')
+    console.error('Error details:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
@@ -100,6 +128,7 @@ async function verifyStripeSignature(body: string, signature: string, secret: st
     const signatures = elements.filter(el => el.startsWith('v1='))
 
     if (!timestamp || signatures.length === 0) {
+      console.error('Invalid signature format')
       return false
     }
 
@@ -122,10 +151,13 @@ async function verifyStripeSignature(body: string, signature: string, secret: st
       .join('')
 
     // Compare signatures
-    return signatures.some(sig => {
+    const isValid = signatures.some(sig => {
       const provided_signature = sig.split('=')[1]
       return provided_signature === expected_signature
     })
+
+    console.log('Signature verification:', { isValid })
+    return isValid
   } catch (error) {
     console.error('Signature verification error:', error)
     return false
@@ -134,7 +166,13 @@ async function verifyStripeSignature(body: string, signature: string, secret: st
 
 // Handle successful checkout session
 async function handleCheckoutSessionCompleted(session: any, supabase: any) {
-  console.log('Processing checkout session completed:', session.id)
+  console.log('=== CHECKOUT SESSION COMPLETED ===')
+  console.log('Session details:', {
+    id: session.id,
+    customer: session.customer,
+    subscription: session.subscription,
+    metadata: session.metadata
+  })
   
   const userId = session.metadata?.user_id
   if (!userId) {
@@ -142,8 +180,11 @@ async function handleCheckoutSessionCompleted(session: any, supabase: any) {
     return
   }
 
-  // Get subscription details from Stripe
+  console.log('Found user_id:', userId)
+
+  // Get subscription details from Stripe if subscription exists
   if (session.subscription) {
+    console.log('Fetching subscription details from Stripe...')
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
     const subscriptionResponse = await fetch(`https://api.stripe.com/v1/subscriptions/${session.subscription}`, {
       headers: {
@@ -153,14 +194,30 @@ async function handleCheckoutSessionCompleted(session: any, supabase: any) {
     
     if (subscriptionResponse.ok) {
       const subscription = await subscriptionResponse.json()
+      console.log('Stripe subscription details:', {
+        id: subscription.id,
+        status: subscription.status,
+        customer: subscription.customer,
+        current_period_end: subscription.current_period_end
+      })
       await createOrUpdateSubscription(subscription, userId, supabase)
+    } else {
+      console.error('Failed to fetch subscription from Stripe:', subscriptionResponse.status)
     }
+  } else {
+    console.log('No subscription in checkout session')
   }
 }
 
 // Handle subscription creation
 async function handleSubscriptionCreated(subscription: any, supabase: any) {
-  console.log('Processing subscription created:', subscription.id)
+  console.log('=== SUBSCRIPTION CREATED ===')
+  console.log('Subscription details:', {
+    id: subscription.id,
+    customer: subscription.customer,
+    status: subscription.status,
+    metadata: subscription.metadata
+  })
   
   const userId = subscription.metadata?.user_id
   if (!userId) {
@@ -173,7 +230,12 @@ async function handleSubscriptionCreated(subscription: any, supabase: any) {
 
 // Handle subscription updates
 async function handleSubscriptionUpdated(subscription: any, supabase: any) {
-  console.log('Processing subscription updated:', subscription.id)
+  console.log('=== SUBSCRIPTION UPDATED ===')
+  console.log('Subscription details:', {
+    id: subscription.id,
+    status: subscription.status,
+    cancel_at_period_end: subscription.cancel_at_period_end
+  })
   
   const userId = subscription.metadata?.user_id
   if (!userId) {
@@ -186,7 +248,8 @@ async function handleSubscriptionUpdated(subscription: any, supabase: any) {
 
 // Handle subscription deletion/cancellation
 async function handleSubscriptionDeleted(subscription: any, supabase: any) {
-  console.log('Processing subscription deleted:', subscription.id)
+  console.log('=== SUBSCRIPTION DELETED ===')
+  console.log('Subscription ID:', subscription.id)
   
   const { error } = await supabase
     .from('subscriptions')
@@ -200,12 +263,19 @@ async function handleSubscriptionDeleted(subscription: any, supabase: any) {
 
   if (error) {
     console.error('Error updating subscription:', error)
+  } else {
+    console.log('Successfully marked subscription as canceled')
   }
 }
 
 // Handle successful payment
 async function handlePaymentSucceeded(invoice: any, supabase: any) {
-  console.log('Processing payment succeeded:', invoice.id)
+  console.log('=== PAYMENT SUCCEEDED ===')
+  console.log('Invoice details:', {
+    id: invoice.id,
+    subscription: invoice.subscription,
+    amount_paid: invoice.amount_paid
+  })
   
   if (invoice.subscription) {
     // Update subscription status to active
@@ -219,13 +289,20 @@ async function handlePaymentSucceeded(invoice: any, supabase: any) {
 
     if (error) {
       console.error('Error updating subscription after payment:', error)
+    } else {
+      console.log('Successfully updated subscription status to active')
     }
   }
 }
 
 // Handle failed payment
 async function handlePaymentFailed(invoice: any, supabase: any) {
-  console.log('Processing payment failed:', invoice.id)
+  console.log('=== PAYMENT FAILED ===')
+  console.log('Invoice details:', {
+    id: invoice.id,
+    subscription: invoice.subscription,
+    attempt_count: invoice.attempt_count
+  })
   
   if (invoice.subscription) {
     // Update subscription status to past_due or canceled based on attempt count
@@ -241,12 +318,17 @@ async function handlePaymentFailed(invoice: any, supabase: any) {
 
     if (error) {
       console.error('Error updating subscription after failed payment:', error)
+    } else {
+      console.log(`Successfully updated subscription status to ${status}`)
     }
   }
 }
 
 // Create or update subscription in database
 async function createOrUpdateSubscription(subscription: any, userId: string, supabase: any) {
+  console.log('=== CREATE/UPDATE SUBSCRIPTION ===')
+  console.log('Processing subscription for user:', userId)
+  
   // Determine status based on Stripe subscription state
   let status = subscription.status
   if (subscription.cancel_at_period_end && subscription.status === 'active') {
@@ -266,12 +348,19 @@ async function createOrUpdateSubscription(subscription: any, userId: string, sup
     updated_at: new Date().toISOString()
   }
 
+  console.log('Subscription data to save:', subscriptionData)
+
   // Try to update existing subscription first
-  const { data: existingSubscription } = await supabase
+  const { data: existingSubscription, error: selectError } = await supabase
     .from('subscriptions')
     .select('id')
     .eq('stripe_subscription_id', subscription.id)
     .single()
+
+  console.log('Existing subscription check:', { 
+    found: !!existingSubscription, 
+    error: selectError?.message 
+  })
 
   if (existingSubscription) {
     // Update existing subscription
@@ -295,6 +384,27 @@ async function createOrUpdateSubscription(subscription: any, userId: string, sup
       console.error('Error creating subscription:', error)
     } else {
       console.log('Successfully created subscription:', subscription.id)
+    }
+  }
+
+  // Also check if we need to create/update by user_id (in case of multiple subscriptions)
+  const { data: userSubscription, error: userSelectError } = await supabase
+    .from('subscriptions')
+    .select('id')
+    .eq('user_id', userId)
+    .single()
+
+  if (!userSubscription && userSelectError?.code === 'PGRST116') {
+    // No subscription exists for this user, create one
+    console.log('Creating subscription record for user:', userId)
+    const { error: insertError } = await supabase
+      .from('subscriptions')
+      .insert(subscriptionData)
+
+    if (insertError) {
+      console.error('Error creating user subscription:', insertError)
+    } else {
+      console.log('Successfully created user subscription')
     }
   }
 }
