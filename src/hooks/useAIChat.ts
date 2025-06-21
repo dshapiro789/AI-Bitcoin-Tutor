@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { AIModel, defaultModels, aiService } from '../services/ai';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
@@ -11,6 +12,11 @@ export interface MessageReaction {
   timestamp: Date;
 }
 
+export interface CodeBlock {
+  language: string;
+  code: string;
+}
+
 export interface Message {
   id: string;
   text: string;
@@ -19,7 +25,7 @@ export interface Message {
   timestamp: Date;
   reactions?: MessageReaction[];
   category?: 'question' | 'explanation' | 'code' | 'error' | 'success';
-  codeBlocks?: { language: string; code: string }[];
+  codeBlocks?: CodeBlock[];
   quickReplies?: string[];
 }
 
@@ -36,6 +42,7 @@ export function useAIChat() {
   const [contextMemory, setContextMemory] = useState<number>(0);
   const [showWelcomeScreen, setShowWelcomeScreen] = useState(false);
   const [starterQuestions, setStarterQuestions] = useState<string[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   
   const { user } = useAuthStore();
   const { subscription } = useSubscriptionStore();
@@ -54,22 +61,36 @@ export function useAIChat() {
       await loadModels();
       
       if (user) {
-        // Load user-specific data in parallel
-        const fetchedMessages = await Promise.all([
-          loadChatHistory(),
-          loadUserModelSettings()
-        ]);
-        
-        const chatMessages = fetchedMessages[0]; // Get messages from loadChatHistory
-        
+        // Try to load the most recent session
+        const { data: latestSession, error: sessionError } = await supabase
+          .from('chat_sessions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (sessionError) throw sessionError;
+
+        if (latestSession) {
+          // Load existing session
+          setCurrentSessionId(latestSession.id);
+          await loadMessagesForSession(latestSession.id);
+        } else {
+          // No existing sessions, create a new one
+          await createNewChatSession();
+        }
+
+        await loadUserModelSettings();
+
         // Check if we should show welcome screen
         if (!user.knowledgeLevel) {
           setShowWelcomeScreen(true);
           setMessages([]); // Clear any existing messages
         } else {
           setShowWelcomeScreen(false);
-          // Load initial message with starter questions if no chat history
-          if (!chatMessages || chatMessages.length === 0) {
+          // If no messages loaded, show initial message
+          if (!latestSession || messages.length === 0) {
             loadInitialMessage(user.knowledgeLevel);
           }
         }
@@ -207,7 +228,7 @@ What would you like to learn about today?`,
     }
   };
 
-  const loadChatHistory = async (): Promise<Message[] | null> => {
+  const loadMessagesForSession = async (sessionId: string): Promise<Message[] | null> => {
     if (!user) return null;
 
     try {
@@ -215,8 +236,8 @@ What would you like to learn about today?`,
         .from('chat_history')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: true })
-        .limit(50); // Load last 50 messages
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
 
@@ -233,29 +254,16 @@ What would you like to learn about today?`,
         }));
 
         setMessages(historyMessages);
+        setCurrentSessionId(sessionId);
         return historyMessages;
       }
-      
+
+      setMessages([]);
       return [];
     } catch (err) {
-      console.error('Error loading chat history:', err);
-      throw err; // Re-throw to be caught by initializeChat
+      console.error('Error loading chat history for session:', err);
+      throw err;
     }
-  };
-
-  const loadMessagesFromHistory = (historyMessages: any[]) => {
-    const formattedMessages: Message[] = historyMessages.map(msg => ({
-      id: msg.id,
-      text: msg.message_text,
-      isUser: msg.is_user,
-      model: msg.model_used,
-      timestamp: new Date(msg.created_at),
-      category: msg.category as Message['category'],
-      codeBlocks: msg.metadata?.codeBlocks || [],
-      quickReplies: msg.metadata?.quickReplies || []
-    }));
-
-    setMessages(formattedMessages);
   };
 
   const loadUserModelSettings = async () => {
@@ -318,14 +326,16 @@ What would you like to learn about today?`,
     }
   };
 
-  const saveMessageToHistory = async (message: Message) => {
+  const saveMessageToHistory = async (message: Message, sessionId: string) => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      // Insert message into chat_history
+      const { error: messageError } = await supabase
         .from('chat_history')
         .insert({
           user_id: user.id,
+          session_id: sessionId,
           message_text: message.text,
           is_user: message.isUser,
           model_used: message.model,
@@ -337,8 +347,67 @@ What would you like to learn about today?`,
         });
 
       if (error) throw error;
+
+      // Update chat_sessions metadata
+      const messageCount = await getMessageCountForSession(sessionId);
+      const { error: sessionUpdateError } = await supabase
+        .from('chat_sessions')
+        .update({
+          last_message_preview: message.text.substring(0, 100) + (message.text.length > 100 ? '...' : ''),
+          message_count: messageCount + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', sessionId)
+        .eq('user_id', user.id);
+
+      if (sessionUpdateError) throw sessionUpdateError;
+
     } catch (err) {
-      console.error('Error saving message to history:', err);
+      console.error('Error saving message or updating session:', err);
+    }
+  };
+
+  const getMessageCountForSession = async (sessionId: string): Promise<number> => {
+    const { count, error } = await supabase
+      .from('chat_history')
+      .select('*', { count: 'exact', head: true })
+      .eq('session_id', sessionId);
+
+    if (error) {
+      console.error('Error getting message count:', error);
+      return 0;
+    }
+    return count || 0;
+  };
+
+  const createNewChatSession = async (): Promise<string> => {
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      const newSessionId = uuidv4();
+      const { error: sessionInsertError } = await supabase
+        .from('chat_sessions')
+        .insert({
+          id: newSessionId,
+          user_id: user.id,
+          title: 'New Chat',
+          last_message_preview: '',
+          message_count: 0
+        });
+
+      if (sessionInsertError) throw sessionInsertError;
+
+      setCurrentSessionId(newSessionId);
+      setMessages([]);
+      setError(null);
+      setContextMemory(0);
+      
+      return newSessionId;
+    } catch (err) {
+      console.error('Error creating new chat session:', err);
+      throw err;
     }
   };
 
@@ -418,31 +487,55 @@ What would you like to learn about today?`,
     }
   };
 
-  const clearChatHistory = async () => {
+  // Start a new chat session (creates a new session in DB and clears current view)
+  const startNewChatSession = async () => {
+    if (!user) {
+      setError('Please sign in to start a new chat session.');
+      return;
+    }
+
+    try {
+      await createNewChatSession();
+      setShowWelcomeScreen(false);
+      
+      if (user.knowledgeLevel) {
+        loadInitialMessage(user.knowledgeLevel);
+      } else {
+        setShowWelcomeScreen(true);
+      }
+    } catch (err) {
+      console.error('Error starting new chat session:', err);
+      setError(err instanceof Error ? err.message : 'Failed to start new chat session');
+    }
+  };
+
+  // Delete ALL chat sessions and history from database (destructive action)
+  const deleteAllChatHistory = async () => {
     if (!user) return;
 
     try {
+      // Delete all chat sessions for the user, which will cascade delete messages
       const { error } = await supabase
-        .from('chat_history')
+        .from('chat_sessions')
         .delete()
         .eq('user_id', user.id);
 
       if (error) throw error;
 
-      // Reset to appropriate initial state
-      if (user.knowledgeLevel) {
-        loadInitialMessage(user.knowledgeLevel);
-      } else {
-        setMessages([]);
-        setShowWelcomeScreen(true);
-      }
+      // After deleting all, start a fresh new session
+      await startNewChatSession();
     } catch (err) {
-      console.error('Error clearing chat history:', err);
+      console.error('Error clearing all chat history:', err);
       throw err;
     }
   };
 
   const exportChatHistory = () => {
+    if (!currentSessionId) {
+      setError('No active chat session to export.');
+      return;
+    }
+
     const chatContent = messages
       .filter(msg => msg.id !== '1') // Exclude welcome message
       .map(msg => {
@@ -452,13 +545,13 @@ What would you like to learn about today?`,
       })
       .join('\n');
 
-    const content = `# Bitcoin AI Tutor Chat History\n\nExported on: ${new Date().toLocaleString()}\nKnowledge Level: ${user?.knowledgeLevel || 'Not set'}\n\n${chatContent}`;
+    const content = `# Bitcoin AI Tutor Chat History (Session: ${currentSessionId})\n\nExported on: ${new Date().toLocaleString()}\nKnowledge Level: ${user?.knowledgeLevel || 'Not set'}\n\n${chatContent}`;
     
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `bitcoin-chat-history-${new Date().toISOString().split('T')[0]}.md`;
+    a.download = `bitcoin-chat-session-${currentSessionId.substring(0, 8)}-${new Date().toISOString().split('T')[0]}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -680,7 +773,12 @@ What would you like to learn about today?`,
   const sendMessage = async (text: string, model: AIModel) => {
     if (!text.trim() || isProcessing) return;
     
-    if (!isPremium && user) {
+    if (!user || !currentSessionId) {
+      setError('User not authenticated or no active chat session.');
+      return;
+    }
+    
+    if (!isPremium) {
       if (!checkLimit(user.id)) {
         setError('You have reached your hourly message limit. Please upgrade to premium for unlimited access.');
         return;
@@ -688,7 +786,7 @@ What would you like to learn about today?`,
     }
 
     const userMessage: Message = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: uuidv4(),
       text,
       isUser: true,
       model: model.name,
@@ -700,9 +798,7 @@ What would you like to learn about today?`,
     setMessages(prev => [...prev, userMessage]);
     
     // Save user message to history
-    if (user) {
-      await saveMessageToHistory(userMessage);
-    }
+    await saveMessageToHistory(userMessage, currentSessionId);
 
     setIsProcessing(true);
     setError(null);
@@ -734,12 +830,12 @@ What would you like to learn about today?`,
 
       const response = await aiService.sendMessage(enhancedPrompt);
 
-      if (!isPremium && user) {
+      if (!isPremium) {
         incrementCount(user.id);
       }
 
       const aiMessage: Message = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: uuidv4(),
         text: response,
         isUser: false,
         model: model.name,
@@ -752,9 +848,7 @@ What would you like to learn about today?`,
       setMessages(prev => [...prev, aiMessage]);
       
       // Save AI message to history
-      if (user) {
-        await saveMessageToHistory(aiMessage);
-      }
+      await saveMessageToHistory(aiMessage, currentSessionId);
 
       setContextMemory(prev => prev + 1);
     } catch (err) {
@@ -779,7 +873,8 @@ What would you like to learn about today?`,
     isPremium,
     currentThoughts,
     contextMemory,
-    clearChatHistory,
+    startNewChatSession,
+    deleteAllChatHistory,
     exportChatHistory,
     saveUserModelSettings,
     addCustomModel,
@@ -788,6 +883,6 @@ What would you like to learn about today?`,
     setShowWelcomeScreen,
     handleKnowledgeLevelSelection,
     starterQuestions,
-    loadMessagesFromHistory
+    loadMessagesForSession
   };
 }

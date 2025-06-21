@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CreditCard, Bot, Key, Crown, CheckCircle, 
   Calendar, AlertTriangle, ArrowRight, X, Menu,
-  Search, Filter, Settings, Send, RefreshCw, Brain,
+  Settings, Send, RefreshCw, Brain,
   Sparkles, Clock, ChevronDown,
   ChevronUp, Trash2, MessageSquare, 
   Save, Upload, History, FileText, Plus, ArrowUp,
-  GraduationCap, BookOpen, Zap, Target, Award, Share2, Info
+  GraduationCap, BookOpen, Zap, Target, Award, Share2
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
@@ -33,7 +33,8 @@ function AiChat() {
     isPremium,
     currentThoughts,
     contextMemory,
-    clearChatHistory,
+    startNewChatSession,
+    deleteAllChatHistory,
     exportChatHistory,
     saveUserModelSettings,
     addCustomModel,
@@ -42,18 +43,15 @@ function AiChat() {
     setShowWelcomeScreen,
     handleKnowledgeLevelSelection,
     starterQuestions,
-    loadMessagesFromHistory
+    loadMessagesForSession
   } = useAIChat();
   
   const { loadChatSession } = useChatHistory();
   
   const [input, setInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [showAdvanced, setShowAdvanced] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [messageFilter, setMessageFilter] = useState<string>('all');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showAddModel, setShowAddModel] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -223,7 +221,7 @@ function AiChat() {
 
   const handleClearHistory = async () => {
     try {
-      await clearChatHistory();
+      await deleteAllChatHistory();
       setShowClearConfirm(false);
       showToast('Chat history cleared successfully');
     } catch (err) {
@@ -321,7 +319,7 @@ function AiChat() {
   };
 
   const handleNewChat = () => {
-    clearChatHistory();
+    startNewChatSession();
     setShowChatHistory(false);
   };
 
@@ -329,23 +327,13 @@ function AiChat() {
     try {
       const sessionMessages = await loadChatSession(sessionId);
       if (sessionMessages && sessionMessages.length > 0) {
-        loadMessagesFromHistory(sessionMessages);
+        await loadMessagesForSession(sessionId);
         showToast('Chat loaded successfully');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load chat');
     }
   };
-
-  const filteredMessages = messages.filter(msg => {
-    if (searchQuery) {
-      return msg.text.toLowerCase().includes(searchQuery.toLowerCase());
-    }
-    if (messageFilter !== 'all') {
-      return msg.category === messageFilter;
-    }
-    return true;
-  });
 
   // Dynamic placeholder text
   const getPlaceholderText = () => {
@@ -360,7 +348,7 @@ function AiChat() {
     return modelId === 'deepseek/deepseek-chat';
   };
 
-  // Show loading screen while initial data is being fetched
+  // Show loading screen during initialization
   if (isLoading) {
     return <LoadingScreen message="Initializing AI Bitcoin Tutor..." />;
   }
@@ -424,27 +412,14 @@ function AiChat() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mx-auto max-w-2xl shadow-lg"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="text-center"
         >
-          <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                <Info className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                Flexible Learning Path
-              </h3>
-              <p className="text-blue-800 font-medium">
-                Don't worry - you can always change your knowledge level later in the settings. 
-                Your learning journey is completely customizable!
-              </p>
-            </div>
-          </div>
+          <p className="text-gray-500 text-sm">
+            Don't worry - you can always change your knowledge level later in the settings.
+          </p>
         </motion.div>
       </motion.div>
     </div>
@@ -476,46 +451,6 @@ function AiChat() {
         onNewChat={handleNewChat}
         onLoadChat={handleLoadChat}
       />
-
-      {/* Search Bar */}
-      <AnimatePresence>
-        {showSearch && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-white border-b shadow-sm flex-shrink-0"
-          >
-            <div className="p-4 flex items-center space-x-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search messages..."
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Filter className="h-5 w-5 text-gray-400" />
-                <select
-                  value={messageFilter}
-                  onChange={(e) => setMessageFilter(e.target.value)}
-                  className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                >
-                  <option value="all">All Messages</option>
-                  <option value="question">Questions</option>
-                  <option value="explanation">Explanations</option>
-                  <option value="code">Code Examples</option>
-                  <option value="error">Errors</option>
-                  <option value="success">Success</option>
-                </select>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Settings Panel */}
       <AnimatePresence>
@@ -872,7 +807,7 @@ function AiChat() {
         ref={messagesContainerRef}
         className="flex-1 bg-gradient-to-br from-gray-50 to-orange-50 overflow-y-auto p-4 space-y-4 pb-32 md:pb-4 relative"
       >
-        {filteredMessages.map((message) => (
+        {messages.map((message) => (
           <div key={message.id} className="relative group">
             <ChatMessage
               {...message}
@@ -1053,18 +988,6 @@ function AiChat() {
             >
               <Settings className="h-5 w-5" />
             </button>
-
-            <button
-              type="button"
-              onClick={() => setShowSearch(!showSearch)}
-              className={`p-3 rounded-xl transition-colors ${
-                showSearch 
-                  ? 'bg-orange-500 text-white' 
-                  : 'text-gray-500 hover:bg-gray-100'
-              }`}
-            >
-              <Search className="h-5 w-5" />
-            </button>
           </div>
 
           <div className="flex-1 relative">
@@ -1141,7 +1064,7 @@ function AiChat() {
                 <span className="font-medium">Warning</span>
               </div>
               <p className="text-gray-600">
-                Are you sure you want to clear your entire chat history? This action cannot be undone.
+                Are you sure you want to clear your entire chat history? This action cannot be undone and will delete all your chat sessions.
               </p>
             </div>
 

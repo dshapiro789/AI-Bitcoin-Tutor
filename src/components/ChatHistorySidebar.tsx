@@ -200,14 +200,14 @@ export function ChatHistorySidebar({
 
                           {/* Last Message Preview */}
                           <p className="text-xs text-gray-500 line-clamp-1 mb-2">
-                            {session.lastMessage}
+                            {session.lastMessagePreview}
                           </p>
 
                           {/* Metadata */}
                           <div className="flex items-center justify-between text-xs text-gray-400">
                             <div className="flex items-center">
                               <Clock className="h-3 w-3 mr-1" />
-                              {formatRelativeTime(session.lastMessageTime)}
+                              {formatRelativeTime(session.updatedAt)}
                             </div>
                             <div className="flex items-center">
                               <MessageSquare className="h-3 w-3 mr-1" />
@@ -250,7 +250,7 @@ export function ChatHistorySidebar({
             <div className="p-4 border-t border-gray-200 bg-white">
               <div className="flex items-center text-xs text-gray-500">
                 <Calendar className="h-4 w-4 mr-2" />
-                <span>Chats are grouped by day</span>
+                <span>Chats are ordered by last activity</span>
               </div>
             </div>
           </motion.div>
