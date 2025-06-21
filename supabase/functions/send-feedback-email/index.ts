@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { Resend } from 'resend'
+import { Resend } from 'npm:resend@^3.2.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -188,7 +188,7 @@ Use reference number ${reference_number} for tracking.
     // Send email using Resend
     console.log('Sending email notification...')
     const emailResult = await resend.emails.send({
-      from: 'AI Bitcoin Tutor <noreply@aibitcointutor.com>',
+      from: 'AI Bitcoin Tutor <aibitcointutor@gmail.com>',
       to: ['aibitcointutor@gmail.com'],
       subject: emailSubject,
       html: emailHtml,
