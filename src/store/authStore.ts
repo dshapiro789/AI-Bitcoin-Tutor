@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import { useSubscriptionStore } from './subscriptionStore';
 
 interface User {
   id: string;
@@ -13,7 +12,7 @@ interface User {
 interface AuthState {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, subscriptionPlan?: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   restoreSession: () => Promise<void>;
@@ -25,7 +24,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   loading: false,
 
-  signUp: async (email: string, password: string, subscriptionPlan?: string) => {
+  signUp: async (email: string, password: string) => {
     try {
       // First check if user exists
       const { data: existingUser } = await supabase.auth.signInWithPassword({
@@ -76,12 +75,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAdmin,
         knowledgeLevel: null
       };
-
-      // If signing up with a subscription plan, create the subscription
-      if (subscriptionPlan) {
-        const { createSubscription } = useSubscriptionStore.getState();
-        await createSubscription(subscriptionPlan, user.id);
-      }
 
       set({ user });
     } catch (err) {

@@ -1,15 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Globe, MessageSquare, Shield, Ban as Bank, Library, ChevronRight, Lock, Crown } from 'lucide-react';
+import { Globe, MessageSquare, Shield, Ban as Bank, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { useSubscriptionStore } from '../store/subscriptionStore';
 import { DonationSection } from '../components/DonationSection';
 
 function Home() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { subscription } = useSubscriptionStore();
 
   const features = [
     {
@@ -29,7 +27,7 @@ function Home() {
     }
   ];
 
-  const freeFeatures = [
+  const availableFeatures = [
     {
       icon: <Globe className="h-8 w-8" />,
       title: "Resources",
@@ -38,44 +36,20 @@ function Home() {
     },
     {
       icon: <MessageSquare className="h-8 w-8" />,
-      title: "Limited AI Chat",
-      description: "Try our AI Bitcoin tutor with basic access (15 messages per hour).",
+      title: "AI Chat",
+      description: "Get personalized help from our advanced AI tutor, available 24/7.",
       path: "/ai-chat"
     }
   ];
 
-  const premiumFeatures = [
-    {
-      icon: <Globe className="h-8 w-8" />,
-      title: "Resources",
-      description: "Access our curated collection of Bitcoin tools and educational materials.",
-      path: "/resources",
-      premium: true
-    },
-    {
-      icon: <MessageSquare className="h-8 w-8" />,
-      title: "Unlimited AI Chat",
-      description: "Get unlimited personalized help from our advanced AI tutor, available 24/7.",
-      path: "/ai-chat",
-      premium: true
-    }
-  ];
-
-  const handleFeatureClick = (path: string, premium: boolean = false) => {
+  const handleFeatureClick = (path: string) => {
     if (!user) {
       navigate(`/auth?redirect=${encodeURIComponent(path)}`);
       return;
     }
     
-    if (premium && (!subscription || subscription.tier !== 'premium')) {
-      navigate('/subscription?redirect=' + encodeURIComponent(path));
-      return;
-    }
-
     navigate(path);
   };
-
-  const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
 
   return (
     <div className="max-w-7xl mx-auto px-4">
@@ -98,19 +72,10 @@ function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/subscription')}
+                onClick={() => navigate('/auth')}
                 className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-center"
               >
                 Get Started
-              </motion.button>
-            ) : !isPremium ? (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/subscription')}
-                className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-center"
-              >
-                Upgrade to Premium
               </motion.button>
             ) : (
               <motion.button
@@ -153,87 +118,30 @@ function Home() {
       <div className="mb-24">
         <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Available Features</h2>
         <p className="text-lg text-gray-600 mb-12 text-center max-w-2xl mx-auto">
-          Simply sign up with your email to gain instant access to our free features.
+          Simply sign up with your email to gain instant access to all our features.
         </p>
         
-        {/* Free Features */}
-        <div className="mb-12">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6">Free Features</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {freeFeatures.map((feature, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.02 }}
-                className="bg-white p-6 rounded-xl shadow-md cursor-pointer"
-                onClick={() => handleFeatureClick(feature.path)}
-              >
-                <div className="p-2 bg-orange-50 rounded-lg text-orange-500 inline-flex mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600 mb-4">{feature.description}</p>
-                <div className="flex items-center text-orange-500 font-medium">
-                  {user ? 'Access Now' : 'Sign In to Access'}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Premium Features */}
-        <div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-6">Premium Features</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {premiumFeatures.map((feature, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.02 }}
-                className={`bg-white p-6 rounded-xl shadow-md cursor-pointer relative ${
-                  !user || (!isPremium && feature.premium) ? 'opacity-75' : ''
-                }`}
-                onClick={() => handleFeatureClick(feature.path, feature.premium)}
-              >
-                <div className="p-2 bg-orange-50 rounded-lg text-orange-500 inline-flex mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2 flex items-center">
-                  {feature.title}
-                  {(!user || (!isPremium && feature.premium)) && (
-                    <Crown className="h-4 w-4 ml-2 text-orange-500" />
-                  )}
-                </h3>
-                <p className="text-gray-600 mb-4">{feature.description}</p>
-                <div className="flex items-center text-orange-500 font-medium">
-                  {!user ? 'Sign In with Premium Account to Access' : 
-                    (!isPremium && feature.premium) ? 'Upgrade to Premium to Access' : 'Access Now'}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {availableFeatures.map((feature, index) => (
+            <motion.div
+              key={index}
+              whileHover={{ scale: 1.02 }}
+              className="bg-white p-6 rounded-xl shadow-md cursor-pointer"
+              onClick={() => handleFeatureClick(feature.path)}
+            >
+              <div className="p-2 bg-orange-50 rounded-lg text-orange-500 inline-flex mb-4">
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
+              <p className="text-gray-600 mb-4">{feature.description}</p>
+              <div className="flex items-center text-orange-500 font-medium">
+                {user ? 'Access Now' : 'Sign In to Access'}
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
-
-      {/* CTA Section */}
-      {(!user || !isPremium) && (
-        <div className="mb-24 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-12 text-white text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            Ready to Master Bitcoin?
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Get unlimited access to all our premium features and start your journey to Bitcoin mastery today.
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/subscription')}
-            className="px-8 py-4 bg-white text-orange-500 rounded-xl hover:bg-orange-50 transition-colors font-semibold text-lg"
-          >
-            Get Premium Access
-          </motion.button>
-        </div>
-      )}
 
       {/* Donation Section */}
       <DonationSection />

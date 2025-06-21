@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  CreditCard, Bot, Key, Crown, CheckCircle, 
+  Bot, Key, CheckCircle, 
   Calendar, AlertTriangle, ArrowRight, X, Menu,
   Settings, Send, RefreshCw, Brain,
   Sparkles, Clock, ChevronDown,
@@ -11,7 +10,6 @@ import {
   GraduationCap, BookOpen, Zap, Target, Award, Share2
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { useSubscriptionStore } from '../store/subscriptionStore';
 import { ChatMessage } from '../components/ChatMessage';
 import { ShareExportModal } from '../components/ShareExportModal';
 import { ChatHistorySidebar } from '../components/ChatHistorySidebar';
@@ -29,8 +27,6 @@ function AiChat() {
     sendMessage,
     updateModel,
     isLoading,
-    remainingMessages,
-    isPremium,
     currentThoughts,
     contextMemory,
     startNewChatSession,
@@ -84,7 +80,6 @@ function AiChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthStore();
-  const navigate = useNavigate();
 
   // Knowledge levels with descriptions and icons
   const knowledgeLevels = [
@@ -813,8 +808,6 @@ function AiChat() {
           <div key={message.id} className="relative group">
             <ChatMessage
               {...message}
-              remainingMessages={message.isUser ? remainingMessages : undefined}
-              isPremium={isPremium}
               onQuickReply={handleQuickReply}
             />
           </div>
@@ -1004,13 +997,6 @@ function AiChat() {
           </div>
 
           <div className="flex items-center space-x-2">
-            {!isPremium && (
-              <div className="hidden sm:flex items-center px-3 py-2 bg-orange-50 text-orange-700 rounded-lg">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">{remainingMessages} left</span>
-              </div>
-            )}
-
             <button
               type="submit"
               disabled={isProcessing || !input.trim()}
@@ -1021,16 +1007,6 @@ function AiChat() {
             </button>
           </div>
         </form>
-
-        {/* Mobile message counter */}
-        {!isPremium && (
-          <div className="sm:hidden flex justify-center mt-2">
-            <div className="flex items-center text-sm text-gray-500">
-              <MessageSquare className="h-4 w-4 mr-1" />
-              <span>{remainingMessages} messages remaining</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Share/Export Modal */}

@@ -3,8 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import AiChat from './pages/AiChat';
-import Subscription from './pages/Subscription';
-import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import Resources from './pages/Resources';
 import Contact from './pages/Contact';
 import Auth from './pages/Auth';
@@ -12,13 +10,10 @@ import AccountSettings from './pages/AccountSettings';
 import { Background } from './components/Background';
 import { ScrollToTop } from './components/ScrollToTop';
 import { useAuthStore } from './store/authStore';
-import { useSubscriptionStore } from './store/subscriptionStore';
 import { RequireAuth } from './components/RequireAuth';
-import { RequireSubscription } from './components/RequireSubscription';
 
 function AppContent() {
   const { restoreSession } = useAuthStore();
-  const { loadSubscription } = useSubscriptionStore();
   const location = useLocation();
 
   // Check if current page is AI Chat
@@ -26,7 +21,6 @@ function AppContent() {
 
   useEffect(() => {
     restoreSession();
-    loadSubscription();
   }, []);
 
   return (
@@ -41,8 +35,6 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/subscription" element={<Subscription />} />
-          <Route path="/subscription/success" element={<SubscriptionSuccess />} />
           <Route path="/contact" element={<Contact />} />
           
           {/* Protected Routes */}

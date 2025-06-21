@@ -1,22 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  CreditCard, MessageSquare, Globe, Menu, X,
-  LogIn, Crown, User, MessageCircle
+  MessageSquare, Globe, Menu, X,
+  LogIn, User, MessageCircle
 } from 'lucide-react';
 import { BitcoinLogo } from './BitcoinLogo';
 import { useAuthStore } from '../store/authStore';
-import { useSubscriptionStore } from '../store/subscriptionStore';
-import { AuthModal } from './AuthModal';
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuthStore();
-  const { subscription } = useSubscriptionStore();
 
   const handleSignIn = () => {
     navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}`);
@@ -27,35 +23,23 @@ function Navbar() {
     setIsMenuOpen(false);
   };
 
-  const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
-
   const navItems = [
-    {
-      to: '/subscription',
-      icon: <CreditCard />,
-      text: 'Subscribe to Premium',
-      premium: false,
-      public: true
-    },
     {
       to: '/resources',
       icon: <Globe />,
       text: 'Resources',
-      premium: false,
       public: false
     },
     {
       to: '/ai-chat',
       icon: <MessageSquare />,
       text: 'AI Chat',
-      premium: false,
       public: false
     },
     {
       to: '/contact',
       icon: <MessageCircle />,
       text: 'Contact',
-      premium: false,
       public: true
     }
   ];
@@ -101,9 +85,6 @@ function Navbar() {
                 >
                   <User className="h-5 w-5" />
                   <span className="hidden sm:inline">Account</span>
-                  {isPremium && (
-                    <Crown className="h-4 w-4 text-orange-500 ml-1" />
-                  )}
                 </button>
 
                 {showUserMenu && (
@@ -184,9 +165,6 @@ function Navbar() {
               >
                 <User className="h-5 w-5" />
                 <span>Account Settings</span>
-                {isPremium && (
-                  <Crown className="h-4 w-4 text-orange-500 ml-1" />
-                )}
               </Link>
               <button
                 onClick={() => {
@@ -210,11 +188,6 @@ function Navbar() {
           )}
         </div>
       </div>
-
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
     </nav>
   );
 }

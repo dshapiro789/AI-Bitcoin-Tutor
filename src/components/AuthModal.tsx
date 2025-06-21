@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { Key, Loader, X, Mail, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedPlan?: string;
 }
 
-export function AuthModal({ isOpen, onClose, selectedPlan }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [mode, setMode] = useState<'signup' | 'signin'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,7 +16,6 @@ export function AuthModal({ isOpen, onClose, selectedPlan }: AuthModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signUp, signIn } = useAuthStore();
-  const location = useLocation();
 
   if (!isOpen) return null;
 
@@ -43,7 +40,7 @@ export function AuthModal({ isOpen, onClose, selectedPlan }: AuthModalProps) {
           throw new Error('Passwords do not match');
         }
         try {
-          await signUp(email, password, selectedPlan);
+          await signUp(email, password);
           onClose();
           setEmail('');
           setPassword('');
@@ -168,12 +165,6 @@ export function AuthModal({ isOpen, onClose, selectedPlan }: AuthModalProps) {
             <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm flex items-start">
               <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
               {error}
-            </div>
-          )}
-
-          {selectedPlan && mode === 'signup' && (
-            <div className="p-3 rounded-lg bg-orange-50 text-orange-700 text-sm">
-              You'll be subscribed to the selected plan after creating your account.
             </div>
           )}
 

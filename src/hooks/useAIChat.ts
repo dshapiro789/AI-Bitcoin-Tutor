@@ -3,8 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AIModel, defaultModels, aiService } from '../services/ai';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
-import { useSubscriptionStore } from '../store/subscriptionStore';
-import { useChatLimitStore } from '../store/chatLimitStore';
+import { useChatHistory } from './useChatHistory';
 import { marked } from 'marked';
 
 export interface MessageReaction {
@@ -45,10 +44,7 @@ export function useAIChat() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   
   const { user } = useAuthStore();
-  const { subscription } = useSubscriptionStore();
-  const { checkLimit, incrementCount, getRemainingMessages } = useChatLimitStore();
-
-  const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
+  const { loadChatSession } = useChatHistory();
 
   // Initialize chat with proper loading coordination and minimum display time
   const initializeChat = async () => {
@@ -777,13 +773,6 @@ What would you like to learn about today?`,
       setError('User not authenticated or no active chat session.');
       return;
     }
-    
-    if (!isPremium) {
-      if (!checkLimit(user.id)) {
-        setError('You have reached your hourly message limit. Please upgrade to premium for unlimited access.');
-        return;
-      }
-    }
 
     const userMessage: Message = {
       id: uuidv4(),
@@ -830,10 +819,6 @@ What would you like to learn about today?`,
 
       const response = await aiService.sendMessage(enhancedPrompt);
 
-      if (!isPremium) {
-        incrementCount(user.id);
-      }
-
       const aiMessage: Message = {
         id: uuidv4(),
         text: response,
@@ -869,8 +854,6 @@ What would you like to learn about today?`,
     isLoading,
     sendMessage,
     updateModel,
-    remainingMessages: !isPremium && user ? getRemainingMessages(user.id) : Infinity,
-    isPremium,
     currentThoughts,
     contextMemory,
     startNewChatSession,
