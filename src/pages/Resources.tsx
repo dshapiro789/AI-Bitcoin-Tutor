@@ -21,7 +21,7 @@ function Resources() {
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState<'resources' | 'treasuries' | 'on-chain'>('resources');
   const [selectedEntityType, setSelectedEntityType] = useState<TreasuryEntityType>('PUBLIC_COMPANY');
-  const [treasuryViewType, setTreasuryViewType] = useState<TreasuryViewType>('treemap');
+  const [treasuryViewType, setTreasuryViewType] = useState<TreasuryViewType>('table'); // Changed default to 'table'
 
   // Define the core tags that will be used across resources
   const CORE_TAGS = [
@@ -358,16 +358,16 @@ function Resources() {
   // Treasury view type options
   const viewTypes = [
     {
-      value: 'treemap' as TreasuryViewType,
-      label: 'Treemap View',
-      description: 'Visual representation of holdings',
-      icon: BarChart3
-    },
-    {
       value: 'table' as TreasuryViewType,
       label: 'Table View',
       description: 'Detailed data table',
       icon: Table
+    },
+    {
+      value: 'treemap' as TreasuryViewType,
+      label: 'Treemap View',
+      description: 'Visual representation (best on larger screens)',
+      icon: BarChart3
     }
   ];
 
@@ -633,55 +633,7 @@ function Resources() {
               </div>
             </div>
 
-            {/* Treemap Visualization */}
-            {treasuryViewType === 'treemap' && (
-              <div className="p-6">
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Corporate & Institutional Bitcoin Holdings
-                  </h3>
-                  <p className="text-gray-600">
-                    Interactive treemap showing the relative size of Bitcoin holdings by companies and institutions. 
-                    Hover over each block to see detailed information about holdings and company names.
-                  </p>
-                </div>
-                
-                <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-lg">
-                  <iframe 
-                    src="https://bitcointreasuries.net/embed?component=TreemapChart" 
-                    title="Bitcoin Treasuries - Corporate & Institutional Holdings"
-                    credentialless
-                    loading="lazy"
-                    style={{
-                      width: '100%', 
-                      height: '600px', 
-                      border: 'none',
-                      borderRadius: '8px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }}
-                    aria-label="Interactive treemap showing Bitcoin holdings by companies and institutions"
-                    className="bg-white transition-opacity duration-300"
-                  />
-                </div>
-                
-                <div className="mt-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
-                  <div className="flex items-start">
-                    <BarChart3 className="h-5 w-5 text-orange-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-orange-700">
-                      <p className="font-medium mb-1">How to read this visualization:</p>
-                      <ul className="space-y-1 text-xs">
-                        <li>• Each rectangle represents an entity holding Bitcoin</li>
-                        <li>• Size is proportional to the amount of Bitcoin held</li>
-                        <li>• Hover over rectangles to see exact holdings and company details</li>
-                        <li>• Colors help distinguish between different entities</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Table View */}
+            {/* Table View - Now Default */}
             {treasuryViewType === 'table' && (
               <>
                 {/* Entity Type Filter */}
@@ -741,6 +693,68 @@ function Resources() {
                   </div>
                 </div>
               </>
+            )}
+
+            {/* Treemap Visualization */}
+            {treasuryViewType === 'treemap' && (
+              <div className="p-6">
+                <div className="mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Corporate & Institutional Bitcoin Holdings
+                  </h3>
+                  <p className="text-gray-600">
+                    Interactive treemap showing the relative size of Bitcoin holdings by companies and institutions. 
+                    Hover over each block to see detailed information about holdings and company names.
+                  </p>
+                </div>
+                
+                {/* Note about larger screens */}
+                <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <BarChart3 className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-blue-700">
+                      <p className="font-medium mb-1">💡 Best viewed on larger screens</p>
+                      <p className="text-xs">
+                        The treemap visualization is optimized for desktop and tablet viewing. 
+                        For the best experience on mobile devices, we recommend using the Table View.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-lg">
+                  <iframe 
+                    src="https://bitcointreasuries.net/embed?component=TreemapChart" 
+                    title="Bitcoin Treasuries - Corporate & Institutional Holdings"
+                    credentialless
+                    loading="lazy"
+                    style={{
+                      width: '100%', 
+                      height: '600px', 
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}
+                    aria-label="Interactive treemap showing Bitcoin holdings by companies and institutions"
+                    className="bg-white transition-opacity duration-300"
+                  />
+                </div>
+                
+                <div className="mt-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <BarChart3 className="h-5 w-5 text-orange-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-orange-700">
+                      <p className="font-medium mb-1">How to read this visualization:</p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• Each rectangle represents an entity holding Bitcoin</li>
+                        <li>• Size is proportional to the amount of Bitcoin held</li>
+                        <li>• Hover over rectangles to see exact holdings and company details</li>
+                        <li>• Colors help distinguish between different entities</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
             
             {/* Footer */}
