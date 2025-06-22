@@ -9,6 +9,7 @@ import Auth from './pages/Auth';
 import AccountSettings from './pages/AccountSettings';
 import { Background } from './components/Background';
 import { ScrollToTop } from './components/ScrollToTop';
+import { ErrorBoundary } from './shared/components/ErrorBoundary';
 import { useAuthStore } from './store/authStore';
 import { RequireAuth } from './components/RequireAuth';
 
@@ -71,10 +72,12 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <AppContent />
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <ScrollToTop />
+        <AppContent />
+      </Router>
+    </ErrorBoundary>
   );
 }
 

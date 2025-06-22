@@ -2,31 +2,15 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import wasm from 'vite-plugin-wasm';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import { resolve } from 'path';
-
-// Creative approach: Dynamic entry resolution with fallback strategies
-const resolveEntryPoint = () => {
-  // Strategy 1: Try multiple possible entry points
-  const possibleEntries = [
-    resolve(__dirname, 'index.html'),
-    resolve(__dirname, './index.html'),
-    resolve(__dirname, 'public/index.html')
-  ];
-  
-  // For this case, we'll use the root index.html
-  return possibleEntries[0];
-};
 
 // Creative build optimization with chunking strategy
 const createChunkingStrategy = () => ({
   'react-vendor': ['react', 'react-dom', 'react-router-dom'],
   'ui-components': ['lucide-react'],
-  'crypto-utils': ['crypto-js'],
   'supabase-client': ['@supabase/supabase-js']
 });
 
 export default defineConfig({
-  root: '.',
   plugins: [
     wasm(),
     react(),
@@ -46,11 +30,7 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
-    // Creative solution: Explicit input configuration with multiple strategies
     rollupOptions: {
-      input: {
-        main: resolveEntryPoint()
-      },
       output: {
         manualChunks: createChunkingStrategy(),
         // Enhanced output configuration for better caching
@@ -77,7 +57,7 @@ export default defineConfig({
     'process.env': {}
   },
   // Creative addition: Ensure proper base path resolution
-  base: './',
+  base: '/',
   // Enhanced server configuration for development
   server: {
     port: 5173,
