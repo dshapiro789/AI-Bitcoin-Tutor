@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Copy, CheckCircle, QrCode, Bitcoin } from 'lucide-react';
+import { Heart, Copy, CheckCircle, QrCode } from 'lucide-react';
 
 export function DonationSection() {
   const [copied, setCopied] = useState(false);
@@ -71,11 +71,6 @@ export function DonationSection() {
                     alt="Bitcoin donation QR code" 
                     className="w-48 h-48 mx-auto"
                   />
-                </div>
-                
-                {/* Bitcoin Logo Overlay */}
-                <div className="absolute -top-3 -right-3 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                  <Bitcoin className="h-6 w-6 text-white" />
                 </div>
               </div>
               
@@ -165,7 +160,7 @@ export function DonationSection() {
           className="text-center mt-12"
         >
           <div className="inline-flex items-center px-6 py-3 bg-white rounded-full shadow-md border border-orange-100">
-            <Bitcoin className="h-5 w-5 text-orange-500 mr-2" />
+            <QrCode className="h-5 w-5 text-orange-500 mr-2" />
             <span className="text-sm font-medium text-gray-700">
               We only accept Bitcoin donations - staying true to our mission
             </span>
