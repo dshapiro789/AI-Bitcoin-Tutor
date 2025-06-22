@@ -445,11 +445,11 @@ function Resources() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-extrabold text-gray-900 mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-4">
             Bitcoin Resources
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
             Discover the best tools, services, and information to enhance your Bitcoin journey
           </p>
         </div>
@@ -463,27 +463,27 @@ function Resources() {
         {/* Bitcoin Resources Tab */}
         {activeTab === 'resources' && (
           <>
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search resources..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl shadow-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-lg"
+                  className="w-full pl-12 pr-12 py-3 sm:py-4 bg-white rounded-2xl shadow-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-base sm:text-lg"
                 />
-                <Search className="absolute left-4 top-4 h-6 w-6 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="absolute right-4 top-4 p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Filter className="h-5 w-5 text-gray-500" />
                 </button>
               </div>
 
               {showFilters && (
-                <div className="mt-4 bg-white p-6 rounded-xl shadow-lg">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="mt-4 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Resource Type
@@ -493,7 +493,7 @@ function Resources() {
                           <button
                             key={type.value}
                             onClick={() => setSelectedType(type.value)}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                            className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1 sm:gap-2 ${
                               selectedType === type.value
                                 ? 'bg-orange-500 text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -501,7 +501,7 @@ function Resources() {
                           >
                             {getTypeIcon(type.value)}
                             <span className="hidden sm:inline">{type.label}</span>
-                            <span className="sm:hidden text-xs">{type.label.split(' ')[0]}</span>
+                            <span className="sm:hidden text-xs truncate">{type.label.split(' ')[0]}</span>
                           </button>
                         ))}
                       </div>
@@ -513,7 +513,7 @@ function Resources() {
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         <button
                           onClick={() => setSelectedTag('all')}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                             selectedTag === 'all'
                               ? 'bg-orange-500 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -525,14 +525,14 @@ function Resources() {
                           <button
                             key={tag}
                             onClick={() => setSelectedTag(tag)}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                               selectedTag === tag
                                 ? 'bg-orange-500 text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                           >
                             <span className="hidden sm:inline">{tag}</span>
-                            <span className="sm:hidden text-xs">{tag.split('-')[0]}</span>
+                            <span className="sm:hidden text-xs truncate">{tag.split('-')[0]}</span>
                           </button>
                         ))}
                       </div>
@@ -542,51 +542,51 @@ function Resources() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {filteredResources.map((resource, index) => (
                 <div
                   key={index}
                   className="group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
+                  <div className="p-4 sm:p-6">
+                    <div className="flex items-start justify-between mb-3 sm:mb-4">
                       <div>
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(resource.type)}`}>
+                        <span className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(resource.type)}`}>
                           {resourceTypes.find(t => t.value === resource.type)?.label}
                         </span>
                       </div>
                       <button className="text-gray-400 hover:text-orange-500 transition-colors">
-                        <Bookmark className="h-5 w-5" />
+                        <Bookmark className="h-4 w-4 sm:h-5 sm:w-5" />
                       </button>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition-colors">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition-colors">
                       {resource.name}
                     </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-2">
+                    <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-2">
                       {resource.description}
                     </p>
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
                       {resource.tags.slice(0, 3).map(tag => (
                         <span
                           key={tag}
-                          className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg text-sm flex items-center hover:bg-gray-200 transition-colors cursor-pointer"
+                          className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg text-xs flex items-center hover:bg-gray-200 transition-colors cursor-pointer"
                         >
                           <Tag className="h-3 w-3 mr-1" />
                           {tag}
                         </span>
                       ))}
                       {resource.tags.length > 3 && (
-                        <span className="text-gray-500 text-sm">+{resource.tags.length - 3}</span>
+                        <span className="text-gray-500 text-xs">+{resource.tags.length - 3}</span>
                       )}
                     </div>
                     <a
                       href={resource.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                      className="inline-flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors text-sm"
                     >
                       Visit Resource
-                      <ArrowUpRight className="h-4 w-4 ml-1" />
+                      <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
                     </a>
                   </div>
                 </div>
@@ -606,19 +606,19 @@ function Resources() {
         {/* Bitcoin Treasuries Tab */}
         {activeTab === 'treasuries' && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-              <h2 className="text-3xl font-bold mb-2">
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">
                 Bitcoin Treasuries
               </h2>
-              <p className="text-orange-100">
+              <p className="text-orange-100 text-sm sm:text-base">
                 Explore entities that hold Bitcoin on their balance sheets. This data shows institutional adoption and confidence in Bitcoin as a treasury asset.
               </p>
             </div>
             
             {/* View Type Toggle */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h3 className="text-lg font-semibold text-gray-900">Visualization Options</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Visualization Options</h3>
                 <div className="flex bg-gray-100 rounded-lg p-1">
                   {viewTypes.map((viewType) => {
                     const Icon = viewType.icon;
@@ -628,14 +628,14 @@ function Resources() {
                       <button
                         key={viewType.value}
                         onClick={() => setTreasuryViewType(viewType.value)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 ${
+                        className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-md transition-all duration-200 ${
                           isActive
                             ? 'bg-white text-orange-600 shadow-sm'
                             : 'text-gray-600 hover:text-gray-900'
                         }`}
                       >
                         <Icon className="h-4 w-4" />
-                        <span className="font-medium text-sm">{viewType.label}</span>
+                        <span className="font-medium text-xs sm:text-sm">{viewType.label}</span>
                       </button>
                     );
                   })}
@@ -647,9 +647,9 @@ function Resources() {
             {treasuryViewType === 'table' && (
               <>
                 {/* Entity Type Filter */}
-                <div className="p-6 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Filter by Entity Type</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 sm:p-6 border-b border-gray-200">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Filter by Entity Type</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     {entityTypes.map((entityType) => {
                       const Icon = entityType.icon;
                       const isActive = selectedEntityType === entityType.value;
@@ -658,23 +658,23 @@ function Resources() {
                         <button
                           key={entityType.value}
                           onClick={() => setSelectedEntityType(entityType.value)}
-                          className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                          className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-left ${
                             isActive
                               ? 'border-orange-500 bg-orange-50 shadow-md'
                               : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
                           }`}
                         >
-                          <div className="flex items-center mb-2">
-                            <Icon className={`h-6 w-6 mr-3 ${
+                          <div className="flex items-center mb-1 sm:mb-2">
+                            <Icon className={`h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 ${
                               isActive ? 'text-orange-500' : 'text-gray-500'
                             }`} />
-                            <span className={`font-semibold ${
+                            <span className={`font-semibold text-sm sm:text-base ${
                               isActive ? 'text-orange-700' : 'text-gray-900'
                             }`}>
                               {entityType.label}
                             </span>
                           </div>
-                          <p className={`text-sm ${
+                          <p className={`text-xs sm:text-sm ${
                             isActive ? 'text-orange-600' : 'text-gray-600'
                           }`}>
                             {entityType.description}
@@ -686,7 +686,7 @@ function Resources() {
                 </div>
                 
                 {/* Treasury Data Table */}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
                     <iframe 
                       key={selectedEntityType} // Force re-render when entity type changes
@@ -695,7 +695,7 @@ function Resources() {
                       credentialless 
                       style={{
                         width: '100%', 
-                        height: '600px', 
+                        height: '500px', 
                         border: 'none'
                       }}
                       className="bg-white transition-opacity duration-300"
@@ -707,22 +707,22 @@ function Resources() {
 
             {/* Treemap Visualization */}
             {treasuryViewType === 'treemap' && (
-              <div className="p-6">
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <div className="p-4 sm:p-6">
+                <div className="mb-4 sm:mb-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                     Corporate & Institutional Bitcoin Holdings
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-sm sm:text-base text-gray-600">
                     Interactive treemap showing the relative size of Bitcoin holdings by companies and institutions. 
                     Hover over each block to see detailed information about holdings and company names.
                   </p>
                 </div>
                 
                 {/* Note about larger screens */}
-                <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="mb-4 sm:mb-6 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
                   <div className="flex items-start">
-                    <BarChart3 className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-blue-700">
+                    <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs sm:text-sm text-blue-700">
                       <p className="font-medium mb-1">💡 Best viewed on larger screens</p>
                       <p className="text-xs">
                         The treemap visualization is optimized for desktop and tablet viewing. 
@@ -740,7 +740,7 @@ function Resources() {
                     loading="lazy"
                     style={{
                       width: '100%', 
-                      height: '600px', 
+                      height: '500px', 
                       border: 'none',
                       borderRadius: '8px',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
@@ -750,10 +750,10 @@ function Resources() {
                   />
                 </div>
                 
-                <div className="mt-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="mt-4 sm:mt-6 bg-orange-50 border border-orange-200 rounded-lg p-3 sm:p-4">
                   <div className="flex items-start">
-                    <BarChart3 className="h-5 w-5 text-orange-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-orange-700">
+                    <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs sm:text-sm text-orange-700">
                       <p className="font-medium mb-1">How to read this visualization:</p>
                       <ul className="space-y-1 text-xs">
                         <li>• Each rectangle represents an entity holding Bitcoin</li>
@@ -768,9 +768,9 @@ function Resources() {
             )}
             
             {/* Footer */}
-            <div className="p-6 bg-gray-50 border-t border-gray-200">
+            <div className="p-4 sm:p-6 bg-gray-50 border-t border-gray-200">
               <div className="text-center">
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-xs sm:text-sm text-gray-500 mb-4">
                   Data provided by{' '}
                   <a 
                     href="https://bitcointreasuries.net" 
@@ -786,7 +786,7 @@ function Resources() {
                   href="https://bitcointreasuries.net"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
                 >
                   View Full Data
                   <ExternalLink className="h-4 w-4 ml-2" />
@@ -799,12 +799,12 @@ function Resources() {
         {/* On-Chain Data Tab */}
         {activeTab === 'on-chain' && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-              <h2 className="text-3xl font-bold mb-2 flex items-center">
-                <Activity className="h-8 w-8 mr-3" />
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2 flex items-center">
+                <Activity className="h-6 w-6 sm:h-8 sm:w-8 mr-2 sm:mr-3" />
                 Bitcoin On-Chain Data
               </h2>
-              <p className="text-orange-100">
+              <p className="text-orange-100 text-sm sm:text-base">
                 Explore real-time Bitcoin blockchain data including transactions, blocks, addresses, mempool activity, and network statistics powered by Blockstream Explorer.
               </p>
             </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, Moon, Sun, ZoomIn, ZoomOut, ExternalLink } from 'lucide-react';
+import { X, Download, Moon, Sun, ZoomIn, ZoomOut, ExternalLink, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 
 interface WhitepaperModalProps {
   isOpen: boolean;
@@ -11,6 +11,8 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(9); // Bitcoin whitepaper has 9 pages
 
   // Handle escape key to close modal
   useEffect(() => {
@@ -52,6 +54,18 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
     document.body.removeChild(link);
   };
 
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -72,48 +86,50 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className={`flex items-center justify-between p-4 border-b ${darkMode ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-200 bg-gray-50 text-gray-900'}`}>
-              <div className="flex items-center">
-                <h2 className="text-xl font-bold">Bitcoin: A Peer-to-Peer Electronic Cash System</h2>
+            <div className={`flex items-center justify-between p-3 sm:p-4 border-b ${darkMode ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-200 bg-gray-50 text-gray-900'}`}>
+              <div className="flex items-center overflow-hidden">
+                <h2 className="text-base sm:text-xl font-bold truncate">Bitcoin: A Peer-to-Peer Electronic Cash System</h2>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 {/* Dark Mode Toggle */}
                 <button
                   onClick={() => setDarkMode(!darkMode)}
                   className={`p-2 rounded-lg transition-colors ${darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                   aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
                 >
-                  {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  {darkMode ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
 
-                {/* Zoom Controls */}
-                <button
-                  onClick={handleZoomOut}
-                  disabled={zoomLevel <= 50}
-                  className={`p-2 rounded-lg transition-colors ${
-                    darkMode 
-                      ? 'bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-50 disabled:hover:bg-gray-700' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:hover:bg-gray-200'
-                  }`}
-                  aria-label="Zoom out"
-                >
-                  <ZoomOut className="h-5 w-5" />
-                </button>
-                <div className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {zoomLevel}%
+                {/* Zoom Controls - Hidden on smallest screens */}
+                <div className="hidden sm:flex items-center space-x-1">
+                  <button
+                    onClick={handleZoomOut}
+                    disabled={zoomLevel <= 50}
+                    className={`p-2 rounded-lg transition-colors ${
+                      darkMode 
+                        ? 'bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-50 disabled:hover:bg-gray-700' 
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:hover:bg-gray-200'
+                    }`}
+                    aria-label="Zoom out"
+                  >
+                    <ZoomOut className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </button>
+                  <div className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                    {zoomLevel}%
+                  </div>
+                  <button
+                    onClick={handleZoomIn}
+                    disabled={zoomLevel >= 200}
+                    className={`p-2 rounded-lg transition-colors ${
+                      darkMode 
+                        ? 'bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-50 disabled:hover:bg-gray-700' 
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:hover:bg-gray-200'
+                    }`}
+                    aria-label="Zoom in"
+                  >
+                    <ZoomIn className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </button>
                 </div>
-                <button
-                  onClick={handleZoomIn}
-                  disabled={zoomLevel >= 200}
-                  className={`p-2 rounded-lg transition-colors ${
-                    darkMode 
-                      ? 'bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-50 disabled:hover:bg-gray-700' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:hover:bg-gray-200'
-                  }`}
-                  aria-label="Zoom in"
-                >
-                  <ZoomIn className="h-5 w-5" />
-                </button>
 
                 {/* Download Button */}
                 <button
@@ -125,7 +141,28 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
                   }`}
                   aria-label="Download whitepaper"
                 >
-                  <Download className="h-5 w-5" />
+                  <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+                </button>
+
+                {/* Share Button - Mobile Only */}
+                <button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: 'Bitcoin Whitepaper',
+                        text: 'Check out the original Bitcoin whitepaper by Satoshi Nakamoto',
+                        url: 'https://bitcoin.org/bitcoin.pdf',
+                      });
+                    }
+                  }}
+                  className={`sm:hidden p-2 rounded-lg transition-colors ${
+                    darkMode 
+                      ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' 
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                  aria-label="Share"
+                >
+                  <Share2 className="h-4 w-4" />
                 </button>
 
                 {/* Close Button */}
@@ -138,7 +175,7 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
                   }`}
                   aria-label="Close modal"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
             </div>
@@ -149,14 +186,14 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
               {isLoading && (
                 <div className={`absolute inset-0 flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
                   <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mb-4"></div>
-                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Loading Bitcoin Whitepaper...</p>
+                    <div className="inline-block animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-orange-500 mb-4"></div>
+                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} text-sm sm:text-base`}>Loading Bitcoin Whitepaper...</p>
                   </div>
                 </div>
               )}
 
               <iframe
-                src={`/bitcoin whitepaper.pdf#view=FitH${darkMode ? '&toolbar=0&navpanes=0' : ''}`}
+                src={`/bitcoin whitepaper.pdf#view=FitH&page=${currentPage}${darkMode ? '&toolbar=0&navpanes=0' : ''}`}
                 className="w-full h-full"
                 style={{ 
                   transform: `scale(${zoomLevel / 100})`,
@@ -166,10 +203,75 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
                 onLoad={() => setIsLoading(false)}
                 title="Bitcoin: A Peer-to-Peer Electronic Cash System"
               />
+
+              {/* Mobile Page Navigation Controls */}
+              <div className="sm:hidden absolute bottom-16 left-0 right-0 flex justify-center items-center space-x-4 py-2">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage <= 1}
+                  className={`p-3 rounded-full shadow-lg transition-colors ${
+                    darkMode 
+                      ? 'bg-gray-800 text-white disabled:opacity-50' 
+                      : 'bg-white text-gray-800 disabled:opacity-50'
+                  }`}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                
+                <div className={`text-sm font-medium px-3 py-2 rounded-lg ${
+                  darkMode 
+                    ? 'bg-gray-800 text-white' 
+                    : 'bg-white text-gray-800'
+                }`}>
+                  {currentPage} / {totalPages}
+                </div>
+                
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage >= totalPages}
+                  className={`p-3 rounded-full shadow-lg transition-colors ${
+                    darkMode 
+                      ? 'bg-gray-800 text-white disabled:opacity-50' 
+                      : 'bg-white text-gray-800 disabled:opacity-50'
+                  }`}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Mobile Zoom Controls */}
+              <div className="sm:hidden absolute top-20 right-4 flex flex-col space-y-2">
+                <button
+                  onClick={handleZoomIn}
+                  disabled={zoomLevel >= 200}
+                  className={`p-2 rounded-full shadow-lg transition-colors ${
+                    darkMode 
+                      ? 'bg-gray-800 text-white disabled:opacity-50' 
+                      : 'bg-white text-gray-800 disabled:opacity-50'
+                  }`}
+                  aria-label="Zoom in"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={handleZoomOut}
+                  disabled={zoomLevel <= 50}
+                  className={`p-2 rounded-full shadow-lg transition-colors ${
+                    darkMode 
+                      ? 'bg-gray-800 text-white disabled:opacity-50' 
+                      : 'bg-white text-gray-800 disabled:opacity-50'
+                  }`}
+                  aria-label="Zoom out"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             {/* Footer */}
-            <div className={`absolute bottom-0 left-0 right-0 p-3 ${
+            <div className={`absolute bottom-0 left-0 right-0 p-2 sm:p-3 ${
               darkMode 
                 ? 'bg-gray-800 text-gray-300 border-t border-gray-700' 
                 : 'bg-gray-50 text-gray-600 border-t border-gray-200'
@@ -182,7 +284,8 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
                   rel="noopener noreferrer"
                   className="flex items-center hover:underline"
                 >
-                  View Original Source
+                  <span className="hidden sm:inline">View Original Source</span>
+                  <span className="sm:hidden">Original PDF</span>
                   <ExternalLink className="h-3 w-3 ml-1" />
                 </a>
               </div>
