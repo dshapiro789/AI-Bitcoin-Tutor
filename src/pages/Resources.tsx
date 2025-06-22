@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Tag, ExternalLink, Filter, ArrowUpRight, Bookmark, ShoppingCart, Zap, Globe, Shield, Code, Wallet, CreditCard, BookOpen, MessageSquare, Building, DollarSign, Landmark, BarChart3, Table, Activity, TrendingUp, Clock, Hash } from 'lucide-react';
 import { MobileContentNav } from '../components/MobileContentNav';
 import { OnChainDataDisplay } from '../components/OnChainDataDisplay';
+import { WhitepaperModal } from '../components/WhitepaperModal';
 
 interface Resource {
   name: string;
@@ -19,9 +20,10 @@ function Resources() {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
-  const [activeTab, setActiveTab] = useState<'resources' | 'treasuries' | 'on-chain'>('resources');
+  const [activeTab, setActiveTab] = useState<'resources' | 'treasuries' | 'on-chain' | 'whitepaper'>('resources');
   const [selectedEntityType, setSelectedEntityType] = useState<TreasuryEntityType>('PUBLIC_COMPANY');
   const [treasuryViewType, setTreasuryViewType] = useState<TreasuryViewType>('table'); // Changed default to 'table'
+  const [showWhitepaperModal, setShowWhitepaperModal] = useState(false);
 
   // Define the core tags that will be used across resources
   const CORE_TAGS = [
@@ -371,6 +373,14 @@ function Resources() {
     }
   ];
 
+  // Handle tab change
+  const handleTabChange = (tab: 'resources' | 'treasuries' | 'on-chain' | 'whitepaper') => {
+    setActiveTab(tab);
+    if (tab === 'whitepaper') {
+      setShowWhitepaperModal(true);
+    }
+  };
+
   // Generate iframe URL based on selected entity type
   const getTreasuryIframeUrl = (entityType: TreasuryEntityType) => {
     const embedConfig = {
@@ -447,7 +457,7 @@ function Resources() {
         {/* Enhanced Mobile-Friendly Tab Navigation */}
         <MobileContentNav
           activeTab={activeTab}
-          onChange={setActiveTab}
+          onChange={handleTabChange}
         />
 
         {/* Bitcoin Resources Tab */}
@@ -803,6 +813,15 @@ function Resources() {
             <OnChainDataDisplay />
           </div>
         )}
+
+        {/* Bitcoin Whitepaper Modal */}
+        <WhitepaperModal 
+          isOpen={showWhitepaperModal} 
+          onClose={() => {
+            setShowWhitepaperModal(false);
+            setActiveTab('resources');
+          }}
+        />
       </div>
     </div>
   );

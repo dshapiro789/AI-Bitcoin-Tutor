@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, DollarSign, Activity } from 'lucide-react';
+import { BookOpen, DollarSign, Activity, FileText } from 'lucide-react';
 
 interface MobileContentNavProps {
-  activeTab: 'resources' | 'treasuries' | 'on-chain';
-  onChange: (tab: 'resources' | 'treasuries' | 'on-chain') => void;
+  activeTab: 'resources' | 'treasuries' | 'on-chain' | 'whitepaper';
+  onChange: (tab: 'resources' | 'treasuries' | 'on-chain' | 'whitepaper') => void;
 }
 
 export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps) {
@@ -26,6 +26,12 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
       icon: Activity,
       label: 'On-Chain Data',
       shortLabel: 'On-Chain'
+    },
+    {
+      id: 'whitepaper' as const,
+      icon: FileText,
+      label: 'Bitcoin Whitepaper',
+      shortLabel: 'Whitepaper'
     }
   ];
 
@@ -37,10 +43,12 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
           className="absolute top-1 bottom-1 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-md"
           animate={{
             left: activeTab === 'resources' ? '0.25rem' : 
-                  activeTab === 'treasuries' ? '33.333%' : '66.666%',
-            width: '33.333%',
+                  activeTab === 'treasuries' ? '25%' : 
+                  activeTab === 'on-chain' ? '50%' : '75%',
+            width: '25%',
             marginLeft: activeTab === 'resources' ? '0' : 
-                       activeTab === 'treasuries' ? '-0.125rem' : '-0.25rem'
+                       activeTab === 'treasuries' ? '-0.125rem' : 
+                       activeTab === 'on-chain' ? '-0.25rem' : '-0.375rem'
           }}
           transition={{
             type: "spring",
@@ -79,7 +87,9 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
               
               <span className="font-semibold text-xs leading-tight text-center">
                 <span className="hidden sm:inline">{tab.shortLabel}</span>
-                <span className="sm:hidden">{tab.id === 'resources' ? 'Tools' : tab.id === 'treasuries' ? 'Holdings' : 'Data'}</span>
+                <span className="sm:hidden">{tab.id === 'resources' ? 'Tools' : 
+                                             tab.id === 'treasuries' ? 'Holdings' : 
+                                             tab.id === 'on-chain' ? 'Data' : 'Paper'}</span>
               </span>
 
               {/* Active indicator dot */}
