@@ -30,17 +30,17 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
   ];
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow-lg p-2 mb-8">
+    <div className="w-full bg-white rounded-2xl shadow-lg p-1 mb-8 overflow-hidden">
       <div className="relative flex">
         {/* Background slider */}
         <motion.div
-          className="absolute top-2 bottom-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-md"
+          className="absolute top-1 bottom-1 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-md"
           animate={{
-            left: activeTab === 'resources' ? '0.5rem' : 
+            left: activeTab === 'resources' ? '0.25rem' : 
                   activeTab === 'treasuries' ? '33.333%' : '66.666%',
             width: '33.333%',
             marginLeft: activeTab === 'resources' ? '0' : 
-                       activeTab === 'treasuries' ? '-0.167rem' : '-0.333rem'
+                       activeTab === 'treasuries' ? '-0.125rem' : '-0.25rem'
           }}
           transition={{
             type: "spring",
@@ -58,7 +58,7 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
             <button
               key={tab.id}
               onClick={() => onChange(tab.id)}
-              className={`relative flex-1 flex items-center justify-center gap-2 px-3 py-4 rounded-xl transition-all duration-300 z-10 ${
+              className={`relative flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 rounded-xl transition-all duration-300 z-10 min-h-[4rem] ${
                 isActive
                   ? 'text-white'
                   : 'text-gray-600 hover:text-orange-500'
@@ -74,12 +74,12 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
                   rotate: { duration: 0.6 }
                 }}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </motion.div>
               
-              <span className="font-semibold text-xs sm:text-sm lg:text-base">
-                <span className="hidden lg:inline">{tab.label}</span>
-                <span className="lg:hidden">{tab.shortLabel}</span>
+              <span className="font-semibold text-xs leading-tight text-center">
+                <span className="hidden sm:inline">{tab.shortLabel}</span>
+                <span className="sm:hidden">{tab.id === 'resources' ? 'Tools' : tab.id === 'treasuries' ? 'Holdings' : 'Data'}</span>
               </span>
 
               {/* Active indicator dot */}
@@ -87,7 +87,7 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full shadow-md"
+                  className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full shadow-md"
                 />
               )}
             </button>
