@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Tag, ExternalLink, Filter, ArrowUpRight, Bookmark, ShoppingCart, Zap, Globe, Shield, Code, Wallet, CreditCard, BookOpen, MessageSquare, Building, DollarSign, Landmark } from 'lucide-react';
+import { MobileContentNav } from '../components/MobileContentNav';
 
 interface Resource {
   name: string;
@@ -9,11 +10,15 @@ interface Resource {
   tags: string[];
 }
 
+type TreasuryEntityType = 'PUBLIC_COMPANY' | 'PRIVATE_COMPANY' | 'GOVERNMENT';
+
 function Resources() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [activeTab, setActiveTab] = useState<'resources' | 'treasuries'>('resources');
+  const [selectedEntityType, setSelectedEntityType] = useState<TreasuryEntityType>('PUBLIC_COMPANY');
 
   // Define the core tags that will be used across resources
   const CORE_TAGS = [
@@ -301,7 +306,8 @@ function Resources() {
   const filteredResources = resources
     .filter(resource => {
       const matchesSearch = resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           resource.description.toLowerCase().includes(searchTerm.toLowerCase());
+                           resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesType = selectedType === 'all' || resource.type === selectedType;
       const matchesTag = selectedTag === 'all' || resource.tags.includes(selectedTag);
       return matchesSearch && matchesType && matchesTag;
@@ -323,6 +329,40 @@ function Resources() {
     { value: 'education', label: 'Education' },
     { value: 'development', label: 'Development' }
   ];
+
+  // Treasury entity type options
+  const entityTypes = [
+    {
+      value: 'PUBLIC_COMPANY' as TreasuryEntityType,
+      label: 'Public Companies',
+      description: 'Publicly traded companies holding Bitcoin',
+      icon: Building
+    },
+    {
+      value: 'PRIVATE_COMPANY' as TreasuryEntityType,
+      label: 'Private Companies',
+      description: 'Private companies with Bitcoin holdings',
+      icon: Shield
+    },
+    {
+      value: 'GOVERNMENT' as TreasuryEntityType,
+      label: 'Governments',
+      description: 'Government entities holding Bitcoin',
+      icon: Landmark
+    }
+  ];
+
+  // Generate iframe URL based on selected entity type
+  const getTreasuryIframeUrl = (entityType: TreasuryEntityType) => {
+    const embedConfig = {
+      limit: 20,
+      disableGrouping: true,
+      role: "holder",
+      entityTypes: [entityType]
+    };
+    const encodedConfig = encodeURIComponent(JSON.stringify(embedConfig));
+    return `https://bitcointreasuries.net/embed?component=MainTable&embedConfig=${encodedConfig}`;
+  };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -385,136 +425,246 @@ function Resources() {
           </p>
         </div>
 
-        <div className="mb-8">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search resources..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl shadow-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-lg"
-            />
-            <Search className="absolute left-4 top-4 h-6 w-6 text-gray-400" />
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="absolute right-4 top-4 p-1 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Filter className="h-5 w-5 text-gray-500" />
-            </button>
-          </div>
+        {/* Enhanced Mobile-Friendly Tab Navigation */}
+        <MobileContentNav
+          activeTab={activeTab}
+          onChange={setActiveTab}
+        />
 
-          {showFilters && (
-            <div className="mt-4 bg-white p-6 rounded-xl shadow-lg">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Resource Type
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {resourceTypes.map(type => (
-                      <button
-                        key={type.value}
-                        onClick={() => setSelectedType(type.value)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                          selectedType === type.value
-                            ? 'bg-orange-500 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {getTypeIcon(type.value)}
-                        <span>{type.label}</span>
-                      </button>
-                    ))}
+        {/* Bitcoin Resources Tab */}
+        {activeTab === 'resources' && (
+          <>
+            <div className="mb-8">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search resources..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl shadow-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-lg"
+                />
+                <Search className="absolute left-4 top-4 h-6 w-6 text-gray-400" />
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="absolute right-4 top-4 p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Filter className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+
+              {showFilters && (
+                <div className="mt-4 bg-white p-6 rounded-xl shadow-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Resource Type
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {resourceTypes.map(type => (
+                          <button
+                            key={type.value}
+                            onClick={() => setSelectedType(type.value)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                              selectedType === type.value
+                                ? 'bg-orange-500 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            {getTypeIcon(type.value)}
+                            <span className="hidden sm:inline">{type.label}</span>
+                            <span className="sm:hidden text-xs">{type.label.split(' ')[0]}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tags
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <button
+                          onClick={() => setSelectedTag('all')}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            selectedTag === 'all'
+                              ? 'bg-orange-500 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          All Tags
+                        </button>
+                        {allTags.map(tag => (
+                          <button
+                            key={tag}
+                            onClick={() => setSelectedTag(tag)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              selectedTag === tag
+                                ? 'bg-orange-500 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            <span className="hidden sm:inline">{tag}</span>
+                            <span className="sm:hidden text-xs">{tag.split('-')[0]}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tags
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredResources.map((resource, index) => (
+                <div
+                  key={index}
+                  className="group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(resource.type)}`}>
+                          {resourceTypes.find(t => t.value === resource.type)?.label}
+                        </span>
+                      </div>
+                      <button className="text-gray-400 hover:text-orange-500 transition-colors">
+                        <Bookmark className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition-colors">
+                      {resource.name}
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-2">
+                      {resource.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {resource.tags.slice(0, 3).map(tag => (
+                        <span
+                          key={tag}
+                          className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg text-sm flex items-center hover:bg-gray-200 transition-colors cursor-pointer"
+                        >
+                          <Tag className="h-3 w-3 mr-1" />
+                          {tag}
+                        </span>
+                      ))}
+                      {resource.tags.length > 3 && (
+                        <span className="text-gray-500 text-sm">+{resource.tags.length - 3}</span>
+                      )}
+                    </div>
+                    <a
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                    >
+                      Visit Resource
+                      <ArrowUpRight className="h-4 w-4 ml-1" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {filteredResources.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">
+                  No resources found matching your criteria. Try adjusting your filters.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Bitcoin Treasuries Tab */}
+        {activeTab === 'treasuries' && (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+              <h2 className="text-3xl font-bold mb-2">
+                Bitcoin Treasuries
+              </h2>
+              <p className="text-orange-100">
+                Explore entities that hold Bitcoin on their balance sheets. This data shows institutional adoption and confidence in Bitcoin as a treasury asset.
+              </p>
+            </div>
+            
+            {/* Entity Type Filter */}
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Filter by Entity Type</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {entityTypes.map((entityType) => {
+                  const Icon = entityType.icon;
+                  const isActive = selectedEntityType === entityType.value;
+                  
+                  return (
                     <button
-                      onClick={() => setSelectedTag('all')}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        selectedTag === 'all'
-                          ? 'bg-orange-500 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      key={entityType.value}
+                      onClick={() => setSelectedEntityType(entityType.value)}
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                        isActive
+                          ? 'border-orange-500 bg-orange-50 shadow-md'
+                          : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
                       }`}
                     >
-                      All Tags
+                      <div className="flex items-center mb-2">
+                        <Icon className={`h-6 w-6 mr-3 ${
+                          isActive ? 'text-orange-500' : 'text-gray-500'
+                        }`} />
+                        <span className={`font-semibold ${
+                          isActive ? 'text-orange-700' : 'text-gray-900'
+                        }`}>
+                          {entityType.label}
+                        </span>
+                      </div>
+                      <p className={`text-sm ${
+                        isActive ? 'text-orange-600' : 'text-gray-600'
+                      }`}>
+                        {entityType.description}
+                      </p>
                     </button>
-                    {allTags.map(tag => (
-                      <button
-                        key={tag}
-                        onClick={() => setSelectedTag(tag)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          selectedTag === tag
-                            ? 'bg-orange-500 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                  );
+                })}
               </div>
             </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredResources.map((resource, index) => (
-            <div
-              key={index}
-              className="group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(resource.type)}`}>
-                      {resourceTypes.find(t => t.value === resource.type)?.label}
-                    </span>
-                  </div>
-                  <button className="text-gray-400 hover:text-orange-500 transition-colors">
-                    <Bookmark className="h-5 w-5" />
-                  </button>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition-colors">
-                  {resource.name}
-                </h3>
-                <p className="text-gray-600 mb-4 line-clamp-2">
-                  {resource.description}
+            
+            {/* Treasury Data Table */}
+            <div className="p-6">
+              <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                <iframe 
+                  key={selectedEntityType} // Force re-render when entity type changes
+                  src={getTreasuryIframeUrl(selectedEntityType)}
+                  title={`Bitcoin Treasuries - ${entityTypes.find(e => e.value === selectedEntityType)?.label}`}
+                  credentialless 
+                  style={{
+                    width: '100%', 
+                    height: '600px', 
+                    border: 'none'
+                  }}
+                  className="bg-white transition-opacity duration-300"
+                />
+              </div>
+              
+              <div className="mt-6 text-center">
+                <p className="text-sm text-gray-500 mb-4">
+                  Data provided by{' '}
+                  <a 
+                    href="https://bitcointreasuries.net" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-orange-500 hover:text-orange-600 font-medium"
+                  >
+                    Bitcoin Treasuries
+                  </a>
                 </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {resource.tags.map(tag => (
-                    <span
-                      key={tag}
-                      className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg text-sm flex items-center hover:bg-gray-200 transition-colors cursor-pointer"
-                    >
-                      <Tag className="h-3 w-3 mr-1" />
-                      {tag}
-                    </span>
-                  ))}
-                </div>
                 <a
-                  href={resource.url}
+                  href="https://bitcointreasuries.net"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                  className="inline-flex items-center px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  Visit Resource
-                  <ArrowUpRight className="h-4 w-4 ml-1" />
+                  View Full Data
+                  <ExternalLink className="h-4 w-4 ml-2" />
                 </a>
               </div>
             </div>
-          ))}
-        </div>
-
-        {filteredResources.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              No resources found matching your criteria. Try adjusting your filters.
-            </p>
           </div>
         )}
       </div>

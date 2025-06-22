@@ -1,70 +1,91 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Video, HelpCircle } from 'lucide-react';
+import { BookOpen, DollarSign } from 'lucide-react';
 
 interface MobileContentNavProps {
-  activeTab: 'content' | 'video' | 'quiz';
-  onChange: (tab: 'content' | 'video' | 'quiz') => void;
-  hasVideos: boolean;
-  hasQuizzes: boolean;
+  activeTab: 'resources' | 'treasuries';
+  onChange: (tab: 'resources' | 'treasuries') => void;
 }
 
-export function MobileContentNav({ activeTab, onChange, hasVideos, hasQuizzes }: MobileContentNavProps) {
+export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps) {
+  const tabs = [
+    {
+      id: 'resources' as const,
+      icon: BookOpen,
+      label: 'Bitcoin Resources',
+      shortLabel: 'Resources'
+    },
+    {
+      id: 'treasuries' as const,
+      icon: DollarSign,
+      label: 'Bitcoin Treasuries',
+      shortLabel: 'Treasuries'
+    }
+  ];
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg lg:hidden">
-      <nav className="flex justify-around items-center">
-        <button
-          onClick={() => onChange('content')}
-          className={`flex-1 py-4 px-2 flex flex-col items-center space-y-1 relative ${
-            activeTab === 'content' ? 'text-orange-500' : 'text-gray-500'
-          }`}
-        >
-          <BookOpen className="h-5 w-5" />
-          <span className="text-xs font-medium">Content</span>
-          {activeTab === 'content' && (
-            <motion.div
-              layoutId="activeTabIndicator"
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500"
-            />
-          )}
-        </button>
+    <div className="w-full bg-white rounded-2xl shadow-lg p-2 mb-8">
+      <div className="relative flex">
+        {/* Background slider */}
+        <motion.div
+          className="absolute top-2 bottom-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-md"
+          animate={{
+            left: activeTab === 'resources' ? '0.5rem' : '50%',
+            width: '50%',
+            marginLeft: activeTab === 'resources' ? '0' : '-0.5rem'
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 300,
+            damping: 30
+          }}
+        />
 
-        {hasVideos && (
-          <button
-            onClick={() => onChange('video')}
-            className={`flex-1 py-4 px-2 flex flex-col items-center space-y-1 relative ${
-              activeTab === 'video' ? 'text-orange-500' : 'text-gray-500'
-            }`}
-          >
-            <Video className="h-5 w-5" />
-            <span className="text-xs font-medium">Videos</span>
-            {activeTab === 'video' && (
+        {/* Tab buttons */}
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onChange(tab.id)}
+              className={`relative flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-xl transition-all duration-300 z-10 ${
+                isActive
+                  ? 'text-white'
+                  : 'text-gray-600 hover:text-orange-500'
+              }`}
+            >
               <motion.div
-                layoutId="activeTabIndicator"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500"
-              />
-            )}
-          </button>
-        )}
+                animate={{
+                  scale: isActive ? 1.1 : 1,
+                  rotate: isActive ? [0, -5, 5, 0] : 0
+                }}
+                transition={{
+                  duration: 0.3,
+                  rotate: { duration: 0.6 }
+                }}
+              >
+                <Icon className="h-5 w-5" />
+              </motion.div>
+              
+              <span className="font-semibold text-sm sm:text-base">
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.shortLabel}</span>
+              </span>
 
-        {hasQuizzes && (
-          <button
-            onClick={() => onChange('quiz')}
-            className={`flex-1 py-4 px-2 flex flex-col items-center space-y-1 relative ${
-              activeTab === 'quiz' ? 'text-orange-500' : 'text-gray-500'
-            }`}
-          >
-            <HelpCircle className="h-5 w-5" />
-            <span className="text-xs font-medium">Quizzes</span>
-            {activeTab === 'quiz' && (
-              <motion.div
-                layoutId="activeTabIndicator"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500"
-              />
-            )}
-          </button>
-        )}
-      </nav>
+              {/* Active indicator dot */}
+              {isActive && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full shadow-md"
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
