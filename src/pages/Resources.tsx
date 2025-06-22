@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tag, ExternalLink, Filter, ArrowUpRight, Bookmark, ShoppingCart, Zap, Globe, Shield, Code, Wallet, CreditCard, BookOpen, MessageSquare, Building, DollarSign, Landmark } from 'lucide-react';
+import { Search, Tag, ExternalLink, Filter, ArrowUpRight, Bookmark, ShoppingCart, Zap, Globe, Shield, Code, Wallet, CreditCard, BookOpen, MessageSquare, Building, DollarSign, Landmark, BarChart3, Table } from 'lucide-react';
 import { MobileContentNav } from '../components/MobileContentNav';
 
 interface Resource {
@@ -11,6 +11,7 @@ interface Resource {
 }
 
 type TreasuryEntityType = 'PUBLIC_COMPANY' | 'PRIVATE_COMPANY' | 'GOVERNMENT';
+type TreasuryViewType = 'table' | 'treemap';
 
 function Resources() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,6 +20,7 @@ function Resources() {
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState<'resources' | 'treasuries'>('resources');
   const [selectedEntityType, setSelectedEntityType] = useState<TreasuryEntityType>('PUBLIC_COMPANY');
+  const [treasuryViewType, setTreasuryViewType] = useState<TreasuryViewType>('treemap');
 
   // Define the core tags that will be used across resources
   const CORE_TAGS = [
@@ -352,6 +354,22 @@ function Resources() {
     }
   ];
 
+  // Treasury view type options
+  const viewTypes = [
+    {
+      value: 'treemap' as TreasuryViewType,
+      label: 'Treemap View',
+      description: 'Visual representation of holdings',
+      icon: BarChart3
+    },
+    {
+      value: 'table' as TreasuryViewType,
+      label: 'Table View',
+      description: 'Detailed data table',
+      icon: Table
+    }
+  ];
+
   // Generate iframe URL based on selected entity type
   const getTreasuryIframeUrl = (entityType: TreasuryEntityType) => {
     const embedConfig = {
@@ -586,63 +604,147 @@ function Resources() {
               </p>
             </div>
             
-            {/* Entity Type Filter */}
+            {/* View Type Toggle */}
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Filter by Entity Type</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {entityTypes.map((entityType) => {
-                  const Icon = entityType.icon;
-                  const isActive = selectedEntityType === entityType.value;
-                  
-                  return (
-                    <button
-                      key={entityType.value}
-                      onClick={() => setSelectedEntityType(entityType.value)}
-                      className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
-                        isActive
-                          ? 'border-orange-500 bg-orange-50 shadow-md'
-                          : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
-                      }`}
-                    >
-                      <div className="flex items-center mb-2">
-                        <Icon className={`h-6 w-6 mr-3 ${
-                          isActive ? 'text-orange-500' : 'text-gray-500'
-                        }`} />
-                        <span className={`font-semibold ${
-                          isActive ? 'text-orange-700' : 'text-gray-900'
-                        }`}>
-                          {entityType.label}
-                        </span>
-                      </div>
-                      <p className={`text-sm ${
-                        isActive ? 'text-orange-600' : 'text-gray-600'
-                      }`}>
-                        {entityType.description}
-                      </p>
-                    </button>
-                  );
-                })}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h3 className="text-lg font-semibold text-gray-900">Visualization Options</h3>
+                <div className="flex bg-gray-100 rounded-lg p-1">
+                  {viewTypes.map((viewType) => {
+                    const Icon = viewType.icon;
+                    const isActive = treasuryViewType === viewType.value;
+                    
+                    return (
+                      <button
+                        key={viewType.value}
+                        onClick={() => setTreasuryViewType(viewType.value)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 ${
+                          isActive
+                            ? 'bg-white text-orange-600 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span className="font-medium text-sm">{viewType.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-            
-            {/* Treasury Data Table */}
-            <div className="p-6">
-              <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
-                <iframe 
-                  key={selectedEntityType} // Force re-render when entity type changes
-                  src={getTreasuryIframeUrl(selectedEntityType)}
-                  title={`Bitcoin Treasuries - ${entityTypes.find(e => e.value === selectedEntityType)?.label}`}
-                  credentialless 
-                  style={{
-                    width: '100%', 
-                    height: '600px', 
-                    border: 'none'
-                  }}
-                  className="bg-white transition-opacity duration-300"
-                />
+
+            {/* Treemap Visualization */}
+            {treasuryViewType === 'treemap' && (
+              <div className="p-6">
+                <div className="mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Corporate & Institutional Bitcoin Holdings
+                  </h3>
+                  <p className="text-gray-600">
+                    Interactive treemap showing the relative size of Bitcoin holdings by companies and institutions. 
+                    Hover over each block to see detailed information about holdings and company names.
+                  </p>
+                </div>
+                
+                <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-lg">
+                  <iframe 
+                    src="https://bitcointreasuries.net/embed?component=TreemapChart" 
+                    title="Bitcoin Treasuries - Corporate & Institutional Holdings"
+                    credentialless
+                    loading="lazy"
+                    style={{
+                      width: '100%', 
+                      height: '600px', 
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}
+                    aria-label="Interactive treemap showing Bitcoin holdings by companies and institutions"
+                    className="bg-white transition-opacity duration-300"
+                  />
+                </div>
+                
+                <div className="mt-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <BarChart3 className="h-5 w-5 text-orange-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-orange-700">
+                      <p className="font-medium mb-1">How to read this visualization:</p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• Each rectangle represents an entity holding Bitcoin</li>
+                        <li>• Size is proportional to the amount of Bitcoin held</li>
+                        <li>• Hover over rectangles to see exact holdings and company details</li>
+                        <li>• Colors help distinguish between different entities</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
-              
-              <div className="mt-6 text-center">
+            )}
+
+            {/* Table View */}
+            {treasuryViewType === 'table' && (
+              <>
+                {/* Entity Type Filter */}
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Filter by Entity Type</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {entityTypes.map((entityType) => {
+                      const Icon = entityType.icon;
+                      const isActive = selectedEntityType === entityType.value;
+                      
+                      return (
+                        <button
+                          key={entityType.value}
+                          onClick={() => setSelectedEntityType(entityType.value)}
+                          className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                            isActive
+                              ? 'border-orange-500 bg-orange-50 shadow-md'
+                              : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
+                          }`}
+                        >
+                          <div className="flex items-center mb-2">
+                            <Icon className={`h-6 w-6 mr-3 ${
+                              isActive ? 'text-orange-500' : 'text-gray-500'
+                            }`} />
+                            <span className={`font-semibold ${
+                              isActive ? 'text-orange-700' : 'text-gray-900'
+                            }`}>
+                              {entityType.label}
+                            </span>
+                          </div>
+                          <p className={`text-sm ${
+                            isActive ? 'text-orange-600' : 'text-gray-600'
+                          }`}>
+                            {entityType.description}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Treasury Data Table */}
+                <div className="p-6">
+                  <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                    <iframe 
+                      key={selectedEntityType} // Force re-render when entity type changes
+                      src={getTreasuryIframeUrl(selectedEntityType)}
+                      title={`Bitcoin Treasuries - ${entityTypes.find(e => e.value === selectedEntityType)?.label}`}
+                      credentialless 
+                      style={{
+                        width: '100%', 
+                        height: '600px', 
+                        border: 'none'
+                      }}
+                      className="bg-white transition-opacity duration-300"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* Footer */}
+            <div className="p-6 bg-gray-50 border-t border-gray-200">
+              <div className="text-center">
                 <p className="text-sm text-gray-500 mb-4">
                   Data provided by{' '}
                   <a 
@@ -653,6 +755,7 @@ function Resources() {
                   >
                     Bitcoin Treasuries
                   </a>
+                  {' '}• Real-time data updates automatically
                 </p>
                 <a
                   href="https://bitcointreasuries.net"
