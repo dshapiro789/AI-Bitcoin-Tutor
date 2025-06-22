@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tag, ExternalLink, Filter, ArrowUpRight, Bookmark, ShoppingCart, Zap, Globe, Shield, Code, Wallet, CreditCard, BookOpen, MessageSquare, Building, DollarSign, Landmark, BarChart3, Table } from 'lucide-react';
+import { Search, Tag, ExternalLink, Filter, ArrowUpRight, Bookmark, ShoppingCart, Zap, Globe, Shield, Code, Wallet, CreditCard, BookOpen, MessageSquare, Building, DollarSign, Landmark, BarChart3, Table, Activity, TrendingUp, Clock, Hash } from 'lucide-react';
 import { MobileContentNav } from '../components/MobileContentNav';
 
 interface Resource {
@@ -18,7 +18,7 @@ function Resources() {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
-  const [activeTab, setActiveTab] = useState<'resources' | 'treasuries'>('resources');
+  const [activeTab, setActiveTab] = useState<'resources' | 'treasuries' | 'on-chain'>('resources');
   const [selectedEntityType, setSelectedEntityType] = useState<TreasuryEntityType>('PUBLIC_COMPANY');
   const [treasuryViewType, setTreasuryViewType] = useState<TreasuryViewType>('treemap');
 
@@ -766,6 +766,141 @@ function Resources() {
                   View Full Data
                   <ExternalLink className="h-4 w-4 ml-2" />
                 </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* On-Chain Data Tab */}
+        {activeTab === 'on-chain' && (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+              <h2 className="text-3xl font-bold mb-2 flex items-center">
+                <Activity className="h-8 w-8 mr-3" />
+                Bitcoin On-Chain Data
+              </h2>
+              <p className="text-orange-100">
+                Explore real-time Bitcoin blockchain data including transactions, blocks, addresses, mempool activity, and network statistics powered by Blockstream Explorer.
+              </p>
+            </div>
+
+            {/* Feature Overview */}
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Data</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="flex items-center p-3 bg-orange-50 rounded-lg">
+                  <Hash className="h-5 w-5 text-orange-500 mr-3" />
+                  <div>
+                    <div className="font-medium text-gray-900">Transactions</div>
+                    <div className="text-sm text-gray-600">Live transaction data</div>
+                  </div>
+                </div>
+                <div className="flex items-center p-3 bg-blue-50 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-blue-500 mr-3" />
+                  <div>
+                    <div className="font-medium text-gray-900">Blocks</div>
+                    <div className="text-sm text-gray-600">Block headers & contents</div>
+                  </div>
+                </div>
+                <div className="flex items-center p-3 bg-green-50 rounded-lg">
+                  <Wallet className="h-5 w-5 text-green-500 mr-3" />
+                  <div>
+                    <div className="font-medium text-gray-900">Addresses</div>
+                    <div className="text-sm text-gray-600">Balances & histories</div>
+                  </div>
+                </div>
+                <div className="flex items-center p-3 bg-purple-50 rounded-lg">
+                  <Clock className="h-5 w-5 text-purple-500 mr-3" />
+                  <div>
+                    <div className="font-medium text-gray-900">Mempool</div>
+                    <div className="text-sm text-gray-600">Fee market dynamics</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Blockstream Explorer Embed */}
+            <div className="p-6">
+              <div className="mb-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Live Bitcoin Explorer
+                </h3>
+                <p className="text-gray-600">
+                  Explore the Bitcoin blockchain in real-time. Search for transactions, blocks, addresses, and more. 
+                  All data is sourced directly from the Bitcoin network via Blockstream's infrastructure.
+                </p>
+              </div>
+              
+              <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-lg">
+                <iframe 
+                  src="https://blockstream.info/" 
+                  title="Blockstream Bitcoin Explorer - Real-time On-Chain Data"
+                  credentialless
+                  loading="lazy"
+                  style={{
+                    width: '100%', 
+                    height: '800px', 
+                    border: 'none',
+                    borderRadius: '8px'
+                  }}
+                  aria-label="Interactive Bitcoin blockchain explorer showing real-time on-chain data"
+                  className="bg-white transition-opacity duration-300"
+                />
+              </div>
+              
+              <div className="mt-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <Activity className="h-5 w-5 text-orange-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-orange-700">
+                    <p className="font-medium mb-1">What you can explore:</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• <strong>Transaction metadata:</strong> Inputs, outputs, fees, confirmations</li>
+                      <li>• <strong>Block information:</strong> Headers, merkle trees, mining details</li>
+                      <li>• <strong>Address data:</strong> Balance, transaction history, UTXOs</li>
+                      <li>• <strong>Network stats:</strong> Hash rate, difficulty, mempool size</li>
+                      <li>• <strong>Fee estimates:</strong> Current fee rates for different confirmation targets</li>
+                      <li>• <strong>Liquid Network:</strong> Asset issuance and supply data</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="p-6 bg-gray-50 border-t border-gray-200">
+              <div className="text-center">
+                <p className="text-sm text-gray-500 mb-4">
+                  Powered by{' '}
+                  <a 
+                    href="https://blockstream.info" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-orange-500 hover:text-orange-600 font-medium"
+                  >
+                    Blockstream Explorer
+                  </a>
+                  {' '}• Real-time Bitcoin blockchain data
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <a
+                    href="https://blockstream.info"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    Open Full Explorer
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                  </a>
+                  <a
+                    href="https://github.com/blockstream/esplora/blob/master/API.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    API Documentation
+                    <Code className="h-4 w-4 ml-2" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>

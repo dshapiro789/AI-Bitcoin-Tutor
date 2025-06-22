@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, DollarSign } from 'lucide-react';
+import { BookOpen, DollarSign, Activity } from 'lucide-react';
 
 interface MobileContentNavProps {
-  activeTab: 'resources' | 'treasuries';
-  onChange: (tab: 'resources' | 'treasuries') => void;
+  activeTab: 'resources' | 'treasuries' | 'on-chain';
+  onChange: (tab: 'resources' | 'treasuries' | 'on-chain') => void;
 }
 
 export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps) {
@@ -20,6 +20,12 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
       icon: DollarSign,
       label: 'Bitcoin Treasuries',
       shortLabel: 'Treasuries'
+    },
+    {
+      id: 'on-chain' as const,
+      icon: Activity,
+      label: 'On-Chain Data',
+      shortLabel: 'On-Chain'
     }
   ];
 
@@ -30,9 +36,11 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
         <motion.div
           className="absolute top-2 bottom-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-md"
           animate={{
-            left: activeTab === 'resources' ? '0.5rem' : '50%',
-            width: '50%',
-            marginLeft: activeTab === 'resources' ? '0' : '-0.5rem'
+            left: activeTab === 'resources' ? '0.5rem' : 
+                  activeTab === 'treasuries' ? '33.333%' : '66.666%',
+            width: '33.333%',
+            marginLeft: activeTab === 'resources' ? '0' : 
+                       activeTab === 'treasuries' ? '-0.167rem' : '-0.333rem'
           }}
           transition={{
             type: "spring",
@@ -50,7 +58,7 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
             <button
               key={tab.id}
               onClick={() => onChange(tab.id)}
-              className={`relative flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-xl transition-all duration-300 z-10 ${
+              className={`relative flex-1 flex items-center justify-center gap-2 px-3 py-4 rounded-xl transition-all duration-300 z-10 ${
                 isActive
                   ? 'text-white'
                   : 'text-gray-600 hover:text-orange-500'
@@ -69,9 +77,9 @@ export function MobileContentNav({ activeTab, onChange }: MobileContentNavProps)
                 <Icon className="h-5 w-5" />
               </motion.div>
               
-              <span className="font-semibold text-sm sm:text-base">
-                <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden">{tab.shortLabel}</span>
+              <span className="font-semibold text-xs sm:text-sm lg:text-base">
+                <span className="hidden lg:inline">{tab.label}</span>
+                <span className="lg:hidden">{tab.shortLabel}</span>
               </span>
 
               {/* Active indicator dot */}
