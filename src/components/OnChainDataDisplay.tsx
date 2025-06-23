@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Activity, Hash, Clock, TrendingUp, Zap, 
   RefreshCw, AlertCircle, CheckCircle, 
   ArrowUp, ArrowDown, DollarSign, Users,
-  Blocks, Timer, Gauge, Network, ChevronDown,
+  Blocks, Gauge, Network, ChevronDown,
   ChevronUp, Filter, Search, Eye, EyeOff,
-  Maximize2, Minimize2, BarChart3, PieChart,
+  BarChart3, PieChart,
   TrendingDown, Wifi, WifiOff
 } from 'lucide-react';
 
@@ -299,30 +299,6 @@ export function OnChainDataDisplay() {
             {/* Controls */}
             <div className="flex items-center gap-2 ml-auto">
               <button
-                onClick={() => setViewSettings(prev => ({ ...prev, compactMode: !prev.compactMode }))}
-                className={`p-2 rounded-lg transition-all duration-200 ${
-                  viewSettings.compactMode 
-                    ? 'bg-orange-500 text-white' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-                title={viewSettings.compactMode ? 'Expand view' : 'Compact view'}
-              >
-                {viewSettings.compactMode ? <Maximize2 className="h-3 w-3 sm:h-4 sm:w-4" /> : <Minimize2 className="h-3 w-3 sm:h-4 sm:w-4" />}
-              </button>
-
-              <button
-                onClick={() => setViewSettings(prev => ({ ...prev, autoRefresh: !prev.autoRefresh }))}
-                className={`p-2 rounded-lg transition-all duration-200 ${
-                  viewSettings.autoRefresh 
-                    ? 'bg-green-500 text-white' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-                title={viewSettings.autoRefresh ? 'Disable auto-refresh' : 'Enable auto-refresh'}
-              >
-                <Timer className="h-3 w-3 sm:h-4 sm:w-4" />
-              </button>
-
-              <button
                 onClick={fetchOnChainData}
                 disabled={loading || !isOnline}
                 className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-xs sm:text-sm"
@@ -431,13 +407,13 @@ export function OnChainDataDisplay() {
               <MetricCard
                 title="Fee Estimates"
                 icon={<DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />}
-                value={`${feeEstimates['1'] || 0} sat/vB`}
+                value={`${(feeEstimates['1'] || 0).toFixed(2)} sat/vB`}
                 label="Next Block"
                 details={Object.entries(feeEstimates)
                   .filter(([blocks]) => ['6', '144'].includes(blocks))
                   .map(([blocks, fee]) => ({
                     label: blocks === '6' ? '~1 hour' : '~1 day',
-                    value: `${fee} sat/vB`,
+                    value: `${fee.toFixed(2)} sat/vB`,
                     color: getFeeColor(fee)
                   }))}
                 compact={viewSettings.compactMode}
@@ -644,7 +620,7 @@ function MetricCard({ title, icon, value, label, trend, details, compact }: Metr
 
       <div className="space-y-2 sm:space-y-3">
         <div>
-          <div className="text-xl sm:text-2xl font-bold text-gray-900">{value}</div>
+          <div className="text-xl sm:text-2xl font-bold text-gray-900 break-words">{value}</div>
           <div className="text-xs sm:text-sm text-gray-600">{label}</div>
         </div>
 
@@ -668,7 +644,7 @@ function MetricCard({ title, icon, value, label, trend, details, compact }: Metr
             {details.map((detail, index) => (
               <div key={index} className="flex justify-between items-center">
                 <span className="text-xs text-gray-600">{detail.label}</span>
-                <span className={`text-xs font-medium ${detail.color || 'text-gray-900'}`}>
+                <span className={`text-xs font-medium break-words ${detail.color || 'text-gray-900'}`}>
                   {detail.value}
                 </span>
               </div>

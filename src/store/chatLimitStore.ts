@@ -1,7 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { useAuthStore } from './authStore';
-import { useSubscriptionStore } from './subscriptionStore';
 
 interface ChatLimit {
   messageCount: number;
@@ -22,79 +20,18 @@ export const useChatLimitStore = create<ChatLimitStore>()(
       limits: {},
       
       checkLimit: (userId: string) => {
-        // Check if user is premium or admin
-        const { user } = useAuthStore.getState();
-        const { subscription } = useSubscriptionStore.getState();
-        const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
-        
-        // Premium users have unlimited access
-        if (isPremium) return true;
-
-        const limit = get().limits[userId];
-        if (!limit) return true;
-
-        const now = Date.now();
-        const hourAgo = now - 3600000; // 1 hour in milliseconds
-
-        // Reset counter if it's been more than an hour
-        if (limit.lastReset < hourAgo) {
-          set((state) => ({
-            limits: {
-              ...state.limits,
-              [userId]: {
-                messageCount: 0,
-                lastReset: now,
-                hourlyLimit: 15
-              }
-            }
-          }));
-          return true;
-        }
-
-        return limit.messageCount < limit.hourlyLimit;
+        // All users now have unlimited access
+        return true;
       },
 
       incrementCount: (userId: string) => {
-        // Don't increment count for premium users
-        const { user } = useAuthStore.getState();
-        const { subscription } = useSubscriptionStore.getState();
-        const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
-        
-        if (isPremium) return;
-
-        const now = Date.now();
-        set((state) => ({
-          limits: {
-            ...state.limits,
-            [userId]: {
-              messageCount: (state.limits[userId]?.messageCount || 0) + 1,
-              lastReset: state.limits[userId]?.lastReset || now,
-              hourlyLimit: 15
-            }
-          }
-        }));
+        // No longer tracking message counts - all users have unlimited access
+        return;
       },
 
       getRemainingMessages: (userId: string) => {
-        // Check if user is premium or admin
-        const { user } = useAuthStore.getState();
-        const { subscription } = useSubscriptionStore.getState();
-        const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
-        
-        // Premium users have unlimited messages
-        if (isPremium) return Infinity;
-
-        const limit = get().limits[userId];
-        if (!limit) return 15;
-
-        const now = Date.now();
-        const hourAgo = now - 3600000;
-
-        if (limit.lastReset < hourAgo) {
-          return 15;
-        }
-
-        return Math.max(0, limit.hourlyLimit - limit.messageCount);
+        // All users have unlimited messages
+        return Infinity;
       }
     }),
     {
