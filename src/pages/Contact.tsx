@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Mail, ExternalLink, Heart, MessageSquare, 
-  Send, Clock, Shield, ArrowRight
+  Send, Shield, ArrowRight
 } from 'lucide-react';
 
 function Contact() {
@@ -79,13 +79,13 @@ function Contact() {
               </motion.a>
             </div>
 
-            {/* Email Address Display */}
+            {/* Email Address Display - Fixed for Mobile */}
             <div className="bg-gray-50 rounded-xl p-6 mb-8">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-700 mb-2">Or copy our email address:</p>
-                <div className="inline-flex items-center px-4 py-2 bg-white rounded-lg border border-gray-200 shadow-sm">
-                  <Mail className="h-4 w-4 text-orange-500 mr-2" />
-                  <span className="font-mono text-gray-800 select-all">aibitcointutor@gmail.com</span>
+                <div className="flex w-full items-center justify-center px-4 py-2 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <Mail className="h-4 w-4 text-orange-500 mr-2 flex-shrink-0" />
+                  <span className="font-mono text-gray-800 select-all break-all text-sm sm:text-base">aibitcointutor@gmail.com</span>
                 </div>
               </div>
             </div>
@@ -130,53 +130,15 @@ function Contact() {
           </div>
         </motion.div>
 
-        {/* Response Time Info */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mt-12 text-center"
-        >
-          <div className="inline-flex items-center px-6 py-3 bg-white rounded-full shadow-md border border-orange-100">
-            <Clock className="h-5 w-5 text-orange-500 mr-2" />
-            <span className="text-sm font-medium text-gray-700">
-              We typically respond within 2-3 business days
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Additional Contact Methods */}
+        {/* Single Contact Method - Feedback & Ideas */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="mt-12"
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Support */}
-            <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
-                <Shield className="h-6 w-6 text-blue-500" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Technical Support</h3>
-              <p className="text-sm text-gray-600">
-                Having trouble with the platform? We're here to help you get back on track.
-              </p>
-            </div>
-
-            {/* Questions */}
-            <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
-                <MessageSquare className="h-6 w-6 text-green-500" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Bitcoin Questions</h3>
-              <p className="text-sm text-gray-600">
-                Need help understanding Bitcoin concepts? Our experts are ready to assist.
-              </p>
-            </div>
-
-            {/* Feedback */}
-            <div className="bg-white p-6 rounded-xl shadow-lg text-center">
+          <div className="flex justify-center">
+            <div className="bg-white p-6 rounded-xl shadow-lg text-center max-w-sm">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-4">
                 <Heart className="h-6 w-6 text-purple-500" />
               </div>
