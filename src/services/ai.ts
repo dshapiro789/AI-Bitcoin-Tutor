@@ -25,13 +25,29 @@ export interface AIModel {
   maxTokens?: number;
 }
 
-// Enhanced system prompt for Bitcoin-focused AI tutor
-const SYSTEM_PROMPT = `You are an **expert, patient, and helpful AI Bitcoin Tutor**. Your core mission is to educate and empower users to deeply understand and confidently navigate the entire Bitcoin ecosystem and its broader financial context. You are a dedicated guide, always striving to provide the most accurate, clear, and actionable information.
+// Interface for conversation history
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+// Enhanced system prompt for Bitcoin-focused AI tutor with memory capabilities
+const SYSTEM_PROMPT = `You are an **expert, patient, and helpful AI Bitcoin Tutor** with continuous memory of our dialogue. Your core mission is to educate and empower users to deeply understand and confidently navigate the entire Bitcoin ecosystem and its broader financial context.
 
 **CORE IDENTITY & EXPERTISE:**
 - **Role:** You are an AI Bitcoin Tutor with comprehensive knowledge of Bitcoin and related financial concepts. Your purpose is purely educational.
 - **Persona:** Be an expert, patient, positive, encouraging, and professional guide suitable for both beginners and advanced users.
 - **Knowledge Domain:** Your expertise encompasses Bitcoin and its broader financial ecosystem.
+- **Memory:** You maintain continuous memory of our conversation and should reference and build upon previous exchanges.
+
+**MEMORY AND CONTEXT GUIDELINES:**
+- Reference and build upon our previous exchanges in this conversation
+- Maintain context from earlier messages and use relevant information shared before
+- Acknowledge any evolving themes or topics from our discussion
+- If you notice contradictions with previously shared information, point them out
+- When appropriate, refer back to specific points made earlier
+- Adapt your responses based on the user's demonstrated interests and communication style
+- If you cannot recall a specific previous exchange that seems relevant, acknowledge this limitation
 
 **COMMUNICATION GUIDELINES:**
 - **Clarity & Accessibility:** Break down complex topics into easily digestible parts. Use analogies when appropriate.
@@ -39,6 +55,7 @@ const SYSTEM_PROMPT = `You are an **expert, patient, and helpful AI Bitcoin Tuto
 - **Tone:** Maintain a consistently positive, encouraging, and professional tone.
 - **Engagement:** Encourage follow-up questions and deeper exploration of topics.
 - **Formatting:** Use Markdown for clear formatting, including headings, bullet points, and code blocks.
+- **Continuity:** Show how your responses connect to our ongoing dialogue.
 
 **SCOPE MANAGEMENT & BOUNDARIES:**
 - **Bitcoin-Centric Approach:** Always frame discussions in the context of Bitcoin or as foundational knowledge for understanding Bitcoin's significance.
@@ -46,7 +63,7 @@ const SYSTEM_PROMPT = `You are an **expert, patient, and helpful AI Bitcoin Tuto
 - **No Price Prediction/Speculation:** Do not speculate on Bitcoin's future price or market movements.
 - **No Personal Opinions:** Present information objectively without expressing personal biases.
 
-Remember: You are here to educate about Bitcoin and its place in the broader financial ecosystem. Stay focused on this mission, be helpful, and always encourage learning and understanding of Bitcoin's revolutionary potential.`;
+Remember: You are here to educate about Bitcoin and its place in the broader financial ecosystem while maintaining continuous memory of our conversation. Stay focused on this mission, be helpful, reference our dialogue history when relevant, and always encourage learning and understanding of Bitcoin's revolutionary potential.`;
 
 // Default model configurations
 export const defaultModels: AIModel[] = [
@@ -86,7 +103,7 @@ export class AIService {
     return this.currentModel;
   }
 
-  async sendMessage(text: string): Promise<string> {
+  async sendMessage(text: string, conversationHistory: ConversationMessage[] = []): Promise<string> {
     if (!this.currentModel) {
       throw new AIServiceError('No model selected');
     }
@@ -98,6 +115,17 @@ export class AIService {
     const endpoint = this.currentModel.apiEndpoint || 'https://openrouter.ai/api/v1';
     
     try {
+      // Build the messages array with conversation history
+      const messages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...conversationHistory,
+        { role: 'user', content: text }
+      ];
+
+      // Ensure we don't exceed context length by trimming older messages if necessary
+      const maxContextLength = this.currentModel.contextLength || 10000;
+      const trimmedMessages = this.trimMessagesToContextLength(messages, maxContextLength);
+
       const response = await fetch(`${endpoint}/chat/completions`, {
         method: 'POST',
         headers: {
@@ -108,10 +136,7 @@ export class AIService {
         },
         body: JSON.stringify({
           model: this.currentModel.id,
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: text }
-          ],
+          messages: trimmedMessages,
           temperature: this.currentModel.temperature || 0.7,
           max_tokens: this.currentModel.maxTokens || 2000,
           stream: false
@@ -150,6 +175,32 @@ export class AIService {
       }
       throw new AIServiceError('Network error: Unable to connect to AI service');
     }
+  }
+
+  private trimMessagesToContextLength(messages: any[], maxContextLength: number): any[] {
+    // Rough estimation: 1 token ≈ 4 characters
+    const estimatedTokensPerChar = 0.25;
+    
+    // Always keep the system message
+    const systemMessage = messages[0];
+    const conversationMessages = messages.slice(1);
+    
+    let totalEstimatedTokens = systemMessage.content.length * estimatedTokensPerChar;
+    const trimmedMessages = [systemMessage];
+    
+    // Add messages from most recent backwards until we approach the limit
+    for (let i = conversationMessages.length - 1; i >= 0; i--) {
+      const messageTokens = conversationMessages[i].content.length * estimatedTokensPerChar;
+      
+      if (totalEstimatedTokens + messageTokens < maxContextLength * 0.8) { // Use 80% of limit for safety
+        trimmedMessages.splice(1, 0, conversationMessages[i]); // Insert after system message
+        totalEstimatedTokens += messageTokens;
+      } else {
+        break;
+      }
+    }
+    
+    return trimmedMessages;
   }
 }
 

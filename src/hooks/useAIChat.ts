@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { AIModel, defaultModels, aiService } from '../services/ai';
+import { AIModel, defaultModels, aiService, ConversationMessage } from '../services/ai';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { useChatHistory } from './useChatHistory';
@@ -766,6 +766,16 @@ What would you like to learn about today?`,
     return prompts[level as keyof typeof prompts] || prompts['beginner'];
   };
 
+  // Helper function to convert messages to conversation history format
+  const buildConversationHistory = (messages: Message[]): ConversationMessage[] => {
+    return messages
+      .filter(msg => msg.id !== '1') // Exclude welcome message
+      .map(msg => ({
+        role: msg.isUser ? 'user' as const : 'assistant' as const,
+        content: msg.text
+      }));
+  };
+
   const sendMessage = async (text: string, model: AIModel) => {
     if (!text.trim() || isProcessing) return;
     
@@ -795,6 +805,7 @@ What would you like to learn about today?`,
     const thoughts = [
       "Analyzing question context...",
       "Retrieving relevant Bitcoin knowledge...",
+      "Reviewing our conversation history...",
       "Adapting response to your knowledge level...",
       "Formulating comprehensive response...",
       "Verifying technical accuracy...",
@@ -810,6 +821,9 @@ What would you like to learn about today?`,
     }, 1000);
 
     try {
+      // Build conversation history from current messages
+      const conversationHistory = buildConversationHistory(messages);
+
       // Create knowledge-level aware prompt
       let enhancedPrompt = text;
       if (user?.knowledgeLevel) {
@@ -817,7 +831,8 @@ What would you like to learn about today?`,
         enhancedPrompt = `[User Knowledge Level: ${user.knowledgeLevel}. ${levelPrompt}]\n\nUser Question: ${text}`;
       }
 
-      const response = await aiService.sendMessage(enhancedPrompt);
+      // Send message with conversation history for memory
+      const response = await aiService.sendMessage(enhancedPrompt, conversationHistory);
 
       const aiMessage: Message = {
         id: uuidv4(),
