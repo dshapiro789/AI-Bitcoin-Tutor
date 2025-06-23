@@ -73,22 +73,22 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75"
+          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-75"
           onClick={onClose}
         >
-          {/* Modal Content */}
+          {/* Modal Content - Updated height constraints for mobile */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={`w-full max-w-6xl h-[90vh] rounded-2xl overflow-hidden shadow-2xl ${darkMode ? 'bg-gray-900' : 'bg-white'}`}
+            className={`w-full max-w-6xl max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)] rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl ${darkMode ? 'bg-gray-900' : 'bg-white'}`}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
+            {/* Header - Updated for better mobile title display */}
             <div className={`flex items-center justify-between p-3 sm:p-4 border-b ${darkMode ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-200 bg-gray-50 text-gray-900'}`}>
               <div className="flex items-center flex-1 min-w-0 mr-4">
-                <h2 className="text-base sm:text-xl font-bold leading-tight">Bitcoin: A Peer-to-Peer Electronic Cash System</h2>
+                <h2 className="text-sm sm:text-base md:text-xl font-bold leading-tight">Bitcoin: A Peer-to-Peer Electronic Cash System</h2>
               </div>
               <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                 {/* Dark Mode Toggle */}
@@ -180,8 +180,8 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
               </div>
             </div>
 
-            {/* PDF Viewer */}
-            <div className="relative w-full h-full">
+            {/* PDF Viewer - Updated height calculation */}
+            <div className="relative w-full h-[calc(100vh-8rem)] sm:h-[calc(100vh-10rem)]">
               {/* Loading Indicator */}
               {isLoading && (
                 <div className={`absolute inset-0 flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
