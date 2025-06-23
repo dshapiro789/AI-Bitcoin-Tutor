@@ -9,6 +9,8 @@ import {
   BarChart3, PieChart,
   TrendingDown, Wifi, WifiOff
 } from 'lucide-react';
+import { FeeDistributionChart } from './charts/FeeDistributionChart';
+import { TransactionVolumeChart } from './charts/TransactionVolumeChart';
 
 // Color Palette
 const colors = {
@@ -110,27 +112,27 @@ export function OnChainDataDisplay() {
     try {
       setError(null);
       
-      // Fetch current block height
-      const heightResponse = await fetch('https://blockstream.info/api/blocks/tip/height');
+      // Fetch current block height using proxied endpoint
+      const heightResponse = await fetch('/api/blockstream/api/blocks/tip/height');
       if (!heightResponse.ok) throw new Error('Failed to fetch block height');
       const currentHeight = await heightResponse.json();
 
-      // Fetch recent blocks
-      const blocksResponse = await fetch(`https://blockstream.info/api/blocks/${currentHeight}`);
+      // Fetch recent blocks using proxied endpoint
+      const blocksResponse = await fetch(`/api/blockstream/api/blocks/${currentHeight}`);
       if (!blocksResponse.ok) throw new Error('Failed to fetch blocks');
       const blocks = await blocksResponse.json();
       
       setCurrentBlock(blocks[0]);
       setRecentBlocks(blocks.slice(0, 10));
 
-      // Fetch mempool stats
-      const mempoolResponse = await fetch('https://blockstream.info/api/mempool');
+      // Fetch mempool stats using proxied endpoint
+      const mempoolResponse = await fetch('/api/blockstream/api/mempool');
       if (!mempoolResponse.ok) throw new Error('Failed to fetch mempool data');
       const mempool = await mempoolResponse.json();
       setMempoolStats(mempool);
 
-      // Fetch fee estimates
-      const feesResponse = await fetch('https://blockstream.info/api/fee-estimates');
+      // Fetch fee estimates using proxied endpoint
+      const feesResponse = await fetch('/api/blockstream/api/fee-estimates');
       if (!feesResponse.ok) throw new Error('Failed to fetch fee estimates');
       const fees = await feesResponse.json();
       setFeeEstimates(fees);
@@ -476,19 +478,37 @@ export function OnChainDataDisplay() {
             onToggle={() => toggleSection('advanced')}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-              {/* Fee Distribution Chart Placeholder */}
+              {/* Fee Distribution Chart */}
               <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
                 <h4 className="font-semibold text-gray-900 mb-4 text-sm sm:text-base">Fee Distribution</h4>
-                <div className="h-32 sm:h-48 bg-gray-50 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500 text-xs sm:text-sm">Chart visualization would go here</p>
+                <div className="h-64 sm:h-80">
+                  {mempoolStats?.fee_histogram ? (
+                    <FeeDistributionChart 
+                      feeHistogram={mempoolStats.fee_histogram}
+                      isDarkMode={false}
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-gray-500 text-xs sm:text-sm">Loading fee distribution data...</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Transaction Volume Placeholder */}
+              {/* Transaction Volume Chart */}
               <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
                 <h4 className="font-semibold text-gray-900 mb-4 text-sm sm:text-base">Transaction Volume</h4>
-                <div className="h-32 sm:h-48 bg-gray-50 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500 text-xs sm:text-sm">Volume chart would go here</p>
+                <div className="h-64 sm:h-80">
+                  {recentBlocks.length > 0 ? (
+                    <TransactionVolumeChart 
+                      blocks={recentBlocks}
+                      isDarkMode={false}
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-gray-500 text-xs sm:text-sm">Loading transaction volume data...</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -62,7 +62,18 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    strictPort: false
+    strictPort: false,
+    proxy: {
+      '/api/blockstream': {
+        target: 'https://blockstream.info',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/blockstream/, ''),
+        secure: true,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Bitcoin-Learning-App/1.0)'
+        }
+      }
+    }
   },
   // Creative approach: Enhanced preview configuration
   preview: {
