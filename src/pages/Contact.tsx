@@ -17,7 +17,7 @@ function Contact() {
         >
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Get in Touch</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Have questions about Bitcoin? Need help with our platform? We'd love to hear from you.
+            Have questions or feedback? We'd love to hear from you.
           </p>
         </motion.div>
 

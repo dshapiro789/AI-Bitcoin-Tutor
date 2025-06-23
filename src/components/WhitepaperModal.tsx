@@ -87,10 +87,10 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
           >
             {/* Header */}
             <div className={`flex items-center justify-between p-3 sm:p-4 border-b ${darkMode ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-200 bg-gray-50 text-gray-900'}`}>
-              <div className="flex items-center overflow-hidden">
-                <h2 className="text-base sm:text-xl font-bold truncate">Bitcoin: A Peer-to-Peer Electronic Cash System</h2>
+              <div className="flex items-center flex-1 min-w-0 mr-4">
+                <h2 className="text-base sm:text-xl font-bold leading-tight">Bitcoin: A Peer-to-Peer Electronic Cash System</h2>
               </div>
-              <div className="flex items-center space-x-1 sm:space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                 {/* Dark Mode Toggle */}
                 <button
                   onClick={() => setDarkMode(!darkMode)}
