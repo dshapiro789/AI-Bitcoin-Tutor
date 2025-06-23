@@ -112,27 +112,31 @@ export function OnChainDataDisplay() {
     try {
       setError(null);
       
-      // Fetch current block height using proxied endpoint
-      const heightResponse = await fetch('/api/blockstream/api/blocks/tip/height');
+      // Use direct Blockstream API calls with CORS proxy
+      const corsProxy = 'https://api.allorigins.win/raw?url=';
+      const baseUrl = 'https://blockstream.info/api';
+      
+      // Fetch current block height
+      const heightResponse = await fetch(`${corsProxy}${encodeURIComponent(`${baseUrl}/blocks/tip/height`)}`);
       if (!heightResponse.ok) throw new Error('Failed to fetch block height');
       const currentHeight = await heightResponse.json();
 
-      // Fetch recent blocks using proxied endpoint
-      const blocksResponse = await fetch(`/api/blockstream/api/blocks/${currentHeight}`);
+      // Fetch recent blocks
+      const blocksResponse = await fetch(`${corsProxy}${encodeURIComponent(`${baseUrl}/blocks/${currentHeight}`)}`);
       if (!blocksResponse.ok) throw new Error('Failed to fetch blocks');
       const blocks = await blocksResponse.json();
       
       setCurrentBlock(blocks[0]);
       setRecentBlocks(blocks.slice(0, 10));
 
-      // Fetch mempool stats using proxied endpoint
-      const mempoolResponse = await fetch('/api/blockstream/api/mempool');
+      // Fetch mempool stats
+      const mempoolResponse = await fetch(`${corsProxy}${encodeURIComponent(`${baseUrl}/mempool`)}`);
       if (!mempoolResponse.ok) throw new Error('Failed to fetch mempool data');
       const mempool = await mempoolResponse.json();
       setMempoolStats(mempool);
 
-      // Fetch fee estimates using proxied endpoint
-      const feesResponse = await fetch('/api/blockstream/api/fee-estimates');
+      // Fetch fee estimates
+      const feesResponse = await fetch(`${corsProxy}${encodeURIComponent(`${baseUrl}/fee-estimates`)}`);
       if (!feesResponse.ok) throw new Error('Failed to fetch fee estimates');
       const fees = await feesResponse.json();
       setFeeEstimates(fees);
@@ -528,7 +532,7 @@ export function OnChainDataDisplay() {
             <div className="text-xs sm:text-sm text-orange-700">
               <p className="font-medium mb-1">Data Source & Settings</p>
               <ul className="space-y-1 text-xs">
-                <li>• Real-time data from Blockstream API</li>
+                <li>• Real-time data from Blockstream API via CORS proxy</li>
                 <li>• Auto-refresh: {viewSettings.autoRefresh ? 'Enabled' : 'Disabled'}</li>
                 <li>• Refresh interval: {viewSettings.refreshInterval / 1000}s</li>
               </ul>
