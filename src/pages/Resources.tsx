@@ -796,53 +796,6 @@ function Resources() {
               </p>
             </div>
 
-            {/* Controls */}
-            <div className="p-4 sm:p-6 border-b border-gray-200 bg-gray-50">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    Bitcoin: A Peer-to-Peer Electronic Cash System
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Published October 31, 2008 by Satoshi Nakamoto
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {/* Zoom Controls - Hidden on mobile */}
-                  <div className="hidden sm:flex items-center gap-2">
-                    <button
-                      onClick={handleWhitepaperZoomOut}
-                      disabled={whitepaperZoom <= 50}
-                      className="p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 transition-colors"
-                      aria-label="Zoom out"
-                    >
-                      <ZoomOut className="h-4 w-4" />
-                    </button>
-                    <span className="text-sm font-medium text-gray-600 min-w-[50px] text-center">
-                      {whitepaperZoom}%
-                    </span>
-                    <button
-                      onClick={handleWhitepaperZoomIn}
-                      disabled={whitepaperZoom >= 200}
-                      className="p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 transition-colors"
-                      aria-label="Zoom in"
-                    >
-                      <ZoomIn className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={handleWhitepaperDownload}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download PDF
-                  </button>
-                </div>
-              </div>
-            </div>
-
             {/* PDF Viewer - Hidden on mobile, visible on sm and larger */}
             <div className="hidden sm:block relative">
               <div 
@@ -885,15 +838,6 @@ function Resources() {
             {/* Footer */}
             <div className="p-4 sm:p-6 bg-gray-50 border-t border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="text-xs sm:text-sm text-gray-500">
-                  <p className="mb-1">
-                    <strong>Citation:</strong> Nakamoto, S. (2008). Bitcoin: A Peer-to-Peer Electronic Cash System.
-                  </p>
-                  <p>
-                    This document is in the public domain and can be freely distributed.
-                  </p>
-                </div>
-                
                 <div className="flex flex-col sm:flex-row gap-2">
                   <a
                     href="https://bitcoin.org/bitcoin.pdf"
