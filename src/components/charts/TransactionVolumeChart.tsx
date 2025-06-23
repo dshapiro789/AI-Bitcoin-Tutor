@@ -188,13 +188,7 @@ export function TransactionVolumeChart({ blocks, isDarkMode = false }: Transacti
           }
         },
         title: {
-          display: true,
-          text: 'Transaction Count',
-          color: 'rgba(59, 130, 246, 1)',
-          font: {
-            size: 12,
-            weight: '600'
-          }
+          display: false
         }
       },
       y1: {
@@ -211,13 +205,7 @@ export function TransactionVolumeChart({ blocks, isDarkMode = false }: Transacti
           }
         },
         title: {
-          display: true,
-          text: 'Block Size (KB)',
-          color: 'rgba(245, 158, 11, 1)',
-          font: {
-            size: 12,
-            weight: '600'
-          }
+          display: false
         }
       }
     },

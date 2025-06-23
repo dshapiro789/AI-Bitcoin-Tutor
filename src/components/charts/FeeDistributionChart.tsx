@@ -64,7 +64,7 @@ export function FeeDistributionChart({ feeHistogram, isDarkMode = false }: FeeDi
     labels: processedData.labels,
     datasets: [
       {
-        label: 'Transaction Volume (kvB)',
+        label: 'Volume (kvB)',
         data: processedData.data,
         backgroundColor: [
           'rgba(34, 197, 94, 0.8)',   // Green for low fees
