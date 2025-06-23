@@ -23,9 +23,6 @@ export function DonationSection() {
         <div className="absolute inset-0 bg-[radial-gradient(#f7931a_1px,transparent_1px)] [background-size:32px_32px]" />
       </div>
       
-      {/* Floating Elements - Removed the left circle, kept the right one */}
-      <div className="absolute bottom-20 right-10 w-32 h-32 bg-orange-200 rounded-full opacity-15 animate-pulse delay-1000" />
-      
       <div className="max-w-4xl mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
