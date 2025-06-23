@@ -83,7 +83,7 @@ function AccountSettings() {
             </h2>
             <div className="bg-gray-50 rounded-xl p-6">
               <p className="text-gray-600 mb-4">
-                Change your password to keep your account secure. We'll send you a password reset link via email.
+                This feature is not currently active in Beta. 
               </p>
               
               {/* Password Reset Status Messages */}
