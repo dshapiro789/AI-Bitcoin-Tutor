@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Search, Tag, ExternalLink, Filter, ArrowUpRight, Bookmark, ShoppingCart, Zap, Globe, Shield, Code, Wallet, CreditCard, BookOpen, MessageSquare, Building, DollarSign, Landmark, BarChart3, Table, Activity, TrendingUp, Clock, Hash } from 'lucide-react';
+import { Search, ExternalLink, Filter, ArrowUpRight, Bookmark, ShoppingCart, Zap, Globe, Shield, Code, Wallet, CreditCard, BookOpen, MessageSquare, Building, DollarSign, Landmark, BarChart3, Table, Activity, TrendingUp, Clock, Hash, Download, ZoomIn, ZoomOut } from 'lucide-react';
 import { MobileContentNav } from '../components/MobileContentNav';
 import { OnChainDataDisplay } from '../components/OnChainDataDisplay';
-import { WhitepaperModal } from '../components/WhitepaperModal';
 
 interface Resource {
   name: string;
@@ -18,12 +17,13 @@ type TreasuryViewType = 'table' | 'treemap';
 function Resources() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
-  const [selectedTag, setSelectedTag] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState<'resources' | 'treasuries' | 'on-chain' | 'whitepaper'>('resources');
   const [selectedEntityType, setSelectedEntityType] = useState<TreasuryEntityType>('PUBLIC_COMPANY');
-  const [treasuryViewType, setTreasuryViewType] = useState<TreasuryViewType>('table'); // Changed default to 'table'
-  const [showWhitepaperModal, setShowWhitepaperModal] = useState(false);
+  const [treasuryViewType, setTreasuryViewType] = useState<TreasuryViewType>('table');
+  
+  // Whitepaper viewer state
+  const [whitepaperZoom, setWhitepaperZoom] = useState(100);
 
   // Define the core tags that will be used across resources
   const CORE_TAGS = [
@@ -305,8 +305,6 @@ function Resources() {
     }
   ];
 
-  const allTags = CORE_TAGS;
-
   // Filter and sort resources alphabetically by name
   const filteredResources = resources
     .filter(resource => {
@@ -314,8 +312,7 @@ function Resources() {
                            resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesType = selectedType === 'all' || resource.type === selectedType;
-      const matchesTag = selectedTag === 'all' || resource.tags.includes(selectedTag);
-      return matchesSearch && matchesType && matchesTag;
+      return matchesSearch && matchesType;
     })
     .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
 
@@ -376,9 +373,6 @@ function Resources() {
   // Handle tab change
   const handleTabChange = (tab: 'resources' | 'treasuries' | 'on-chain' | 'whitepaper') => {
     setActiveTab(tab);
-    if (tab === 'whitepaper') {
-      setShowWhitepaperModal(true);
-    }
   };
 
   // Generate iframe URL based on selected entity type
@@ -391,6 +385,27 @@ function Resources() {
     };
     const encodedConfig = encodeURIComponent(JSON.stringify(embedConfig));
     return `https://bitcointreasuries.net/embed?component=MainTable&embedConfig=${encodedConfig}`;
+  };
+
+  const handleWhitepaperDownload = () => {
+    const link = document.createElement('a');
+    link.href = '/bitcoin whitepaper.pdf';
+    link.download = 'bitcoin_whitepaper.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleWhitepaperZoomIn = () => {
+    if (whitepaperZoom < 200) {
+      setWhitepaperZoom(prev => prev + 10);
+    }
+  };
+
+  const handleWhitepaperZoomOut = () => {
+    if (whitepaperZoom > 50) {
+      setWhitepaperZoom(prev => prev - 10);
+    }
   };
 
   const getTypeIcon = (type: string) => {
@@ -483,59 +498,26 @@ function Resources() {
 
               {showFilters && (
                 <div className="mt-4 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Resource Type
-                      </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        {resourceTypes.map(type => (
-                          <button
-                            key={type.value}
-                            onClick={() => setSelectedType(type.value)}
-                            className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1 sm:gap-2 ${
-                              selectedType === type.value
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            {getTypeIcon(type.value)}
-                            <span className="hidden sm:inline">{type.label}</span>
-                            <span className="sm:hidden text-xs truncate">{type.label.split(' ')[0]}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tags
-                      </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Resource Type
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {resourceTypes.map(type => (
                         <button
-                          onClick={() => setSelectedTag('all')}
-                          className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                            selectedTag === 'all'
+                          key={type.value}
+                          onClick={() => setSelectedType(type.value)}
+                          className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1 sm:gap-2 ${
+                            selectedType === type.value
                               ? 'bg-orange-500 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
-                          All Tags
+                          {getTypeIcon(type.value)}
+                          <span className="hidden sm:inline">{type.label}</span>
+                          <span className="sm:hidden text-xs truncate">{type.label.split(' ')[0]}</span>
                         </button>
-                        {allTags.map(tag => (
-                          <button
-                            key={tag}
-                            onClick={() => setSelectedTag(tag)}
-                            className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                              selectedTag === tag
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            <span className="hidden sm:inline">{tag}</span>
-                            <span className="sm:hidden text-xs truncate">{tag.split('-')[0]}</span>
-                          </button>
-                        ))}
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -565,20 +547,6 @@ function Resources() {
                     <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-2">
                       {resource.description}
                     </p>
-                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
-                      {resource.tags.slice(0, 3).map(tag => (
-                        <span
-                          key={tag}
-                          className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg text-xs flex items-center hover:bg-gray-200 transition-colors cursor-pointer"
-                        >
-                          <Tag className="h-3 w-3 mr-1" />
-                          {tag}
-                        </span>
-                      ))}
-                      {resource.tags.length > 3 && (
-                        <span className="text-gray-500 text-xs">+{resource.tags.length - 3}</span>
-                      )}
-                    </div>
                     <a
                       href={resource.url}
                       target="_blank"
@@ -814,14 +782,113 @@ function Resources() {
           </div>
         )}
 
-        {/* Bitcoin Whitepaper Modal */}
-        <WhitepaperModal 
-          isOpen={showWhitepaperModal} 
-          onClose={() => {
-            setShowWhitepaperModal(false);
-            setActiveTab('resources');
-          }}
-        />
+        {/* Bitcoin Whitepaper Tab - Embedded directly in page */}
+        {activeTab === 'whitepaper' && (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            {/* Header */}
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2 flex items-center">
+                <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 mr-2 sm:mr-3" />
+                Bitcoin Whitepaper
+              </h2>
+              <p className="text-orange-100 text-sm sm:text-base">
+                Read the original Bitcoin whitepaper by Satoshi Nakamoto - the foundational document that introduced Bitcoin to the world.
+              </p>
+            </div>
+
+            {/* Controls */}
+            <div className="p-4 sm:p-6 border-b border-gray-200 bg-gray-50">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    Bitcoin: A Peer-to-Peer Electronic Cash System
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Published October 31, 2008 by Satoshi Nakamoto
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  {/* Zoom Controls */}
+                  <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                    <button
+                      onClick={handleWhitepaperZoomOut}
+                      disabled={whitepaperZoom <= 50}
+                      className="p-2 rounded-md transition-colors disabled:opacity-50 hover:bg-gray-200"
+                      title="Zoom out"
+                    >
+                      <ZoomOut className="h-4 w-4" />
+                    </button>
+                    <span className="text-sm font-medium px-2 min-w-[3rem] text-center">
+                      {whitepaperZoom}%
+                    </span>
+                    <button
+                      onClick={handleWhitepaperZoomIn}
+                      disabled={whitepaperZoom >= 200}
+                      className="p-2 rounded-md transition-colors disabled:opacity-50 hover:bg-gray-200"
+                      title="Zoom in"
+                    >
+                      <ZoomIn className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {/* Download Button */}
+                  <button
+                    onClick={handleWhitepaperDownload}
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline">Download PDF</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* PDF Viewer */}
+            <div className="relative">
+              <div 
+                className="w-full bg-gray-100"
+                style={{ height: '80vh', minHeight: '600px' }}
+              >
+                <iframe
+                  src="/bitcoin whitepaper.pdf#view=FitH"
+                  className="w-full h-full border-0"
+                  style={{ 
+                    transform: `scale(${whitepaperZoom / 100})`,
+                    transformOrigin: 'top center',
+                    backgroundColor: '#ffffff'
+                  }}
+                  title="Bitcoin: A Peer-to-Peer Electronic Cash System"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 sm:p-6 bg-gray-50 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="text-sm text-gray-600">
+                  <p className="font-medium mb-1">About this document:</p>
+                  <p>
+                    This is the original Bitcoin whitepaper that introduced the concept of a peer-to-peer electronic cash system. 
+                    It laid the foundation for the entire cryptocurrency ecosystem.
+                  </p>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <a
+                    href="https://bitcoin.org/bitcoin.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Original Source
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
