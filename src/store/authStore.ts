@@ -187,7 +187,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   resetPassword: async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/account?password-reset=true`,
+        redirectTo: 'https://aibitcointutor.com/account?password-reset=true',
       });
 
       if (error) throw error;
