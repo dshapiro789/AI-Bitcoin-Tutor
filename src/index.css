@@ -5,6 +5,25 @@
 /* Import responsive design system */
 @import './styles/responsive.css';
 
+/* Safe area insets for mobile devices */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
+/* Mobile viewport height fix */
+.mobile-vh {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for modern browsers */
+}
+
+.mobile-max-h {
+  max-height: 100vh;
+  max-height: 100dvh; /* Dynamic viewport height for modern browsers */
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
