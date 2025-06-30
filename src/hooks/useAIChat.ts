@@ -308,10 +308,49 @@ What would you like to learn about today?`,
           }
         });
 
+        // CRITICAL FIX: Ensure only one model is active
+        const activeModels = mergedModels.filter(m => m.active);
+        
+        if (activeModels.length > 1) {
+          console.log('Multiple active models detected, fixing...');
+          // Multiple active models found - fix this by keeping only the first one active
+          mergedModels.forEach((model, index) => {
+            if (model.active && index > 0) {
+              model.active = false;
+              // Save the corrected state to database if it's a user model
+              if (userModels.some(um => um.id === model.id)) {
+                saveUserModelSettings(model);
+              }
+            }
+          });
+        } else if (activeModels.length === 0) {
+          // No active model found - set the default model as active
+          const defaultModel = mergedModels.find(m => m.id === 'deepseek/deepseek-chat');
+          if (defaultModel) {
+            defaultModel.active = true;
+            // Save this change to database if it's a user model
+            if (userModels.some(um => um.id === defaultModel.id)) {
+              saveUserModelSettings(defaultModel);
+            }
+          }
+        }
+
         setModels(mergedModels);
 
-        // Set active model
+        // Set active model in AI service
         const activeModel = mergedModels.find(m => m.active);
+        if (activeModel) {
+          aiService.setModel(activeModel);
+        }
+      } else {
+        // No user models found, ensure default model is active
+        const updatedDefaultModels = defaultModels.map(model => ({
+          ...model,
+          active: model.id === 'deepseek/deepseek-chat'
+        }));
+        setModels(updatedDefaultModels);
+        
+        const activeModel = updatedDefaultModels.find(m => m.active);
         if (activeModel) {
           aiService.setModel(activeModel);
         }
@@ -556,28 +595,45 @@ What would you like to learn about today?`,
 
   const updateModel = (modelId: string, updatedModel: Partial<AIModel>) => {
     setModels(prevModels => {
-      // If setting a model as active, deactivate all others
+      let newModels = [...prevModels];
+
+      // CRITICAL FIX: If setting a model as active, deactivate all others first
       if (updatedModel.active) {
-        prevModels = prevModels.map(m => ({
-          ...m,
-          active: false
+        console.log(`Setting model ${modelId} as active, deactivating others...`);
+        
+        // Find all currently active models and deactivate them
+        const currentlyActiveModels = newModels.filter(m => m.active && m.id !== modelId);
+        
+        // Deactivate all other models
+        newModels = newModels.map(model => ({
+          ...model,
+          active: model.id === modelId ? true : false
         }));
+
+        // Save deactivated models to database
+        currentlyActiveModels.forEach(async (model) => {
+          if (user) {
+            const deactivatedModel = { ...model, active: false };
+            await saveUserModelSettings(deactivatedModel);
+          }
+        });
       }
 
-      const newModels = prevModels.map(model => 
+      // Apply the update to the target model
+      newModels = newModels.map(model => 
         model.id === modelId
           ? { ...model, ...updatedModel }
           : model
       );
 
-      // Update the AI service with the new model if it's being set as active
+      // Update the AI service with the new active model if it's being set as active
       if (updatedModel.active) {
-        const model = newModels.find(m => m.id === modelId);
-        if (model) {
-          aiService.setModel(model);
-          // Save user model settings
-          if (user && model.apiKeyRequired) {
-            saveUserModelSettings(model);
+        const activeModel = newModels.find(m => m.id === modelId);
+        if (activeModel) {
+          aiService.setModel(activeModel);
+          // Save the newly active model to database
+          if (user && activeModel.apiKeyRequired) {
+            saveUserModelSettings(activeModel);
           }
         }
       }
