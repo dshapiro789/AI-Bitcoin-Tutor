@@ -160,6 +160,14 @@ export function OnChainDataDisplay() {
     }
   }, [viewSettings.autoRefresh, viewSettings.refreshInterval, isOnline]);
 
+  // Utility function to format hash by removing leading zeros
+  const formatHashForDisplay = (hash: string): string => {
+    if (!hash) return '';
+    // Remove leading zeros but keep at least one character
+    const formatted = hash.replace(/^0+/, '');
+    return formatted || '0';
+  };
+
   // Utility functions
   const formatHashRate = (hashrate: number) => {
     if (hashrate >= 1e18) return `${(hashrate / 1e18).toFixed(2)} EH/s`;
@@ -371,8 +379,7 @@ export function OnChainDataDisplay() {
               <div className="p-3 sm:p-4 bg-white/10 rounded-lg sm:rounded-xl backdrop-blur-sm">
                 <div className="text-orange-200 text-xs sm:text-sm font-medium mb-2">Block Hash</div>
                 <div className="font-mono text-white text-xs sm:text-sm break-all">
-                  <span className="sm:hidden">{currentBlock.id.substring(0, 32)}...</span>
-                  <span className="hidden sm:inline">{currentBlock.id}</span>
+                  {formatHashForDisplay(currentBlock.id)}
                 </div>
               </div>
             </div>
@@ -693,6 +700,14 @@ function RecentBlocksTable({ blocks, compact, searchTerm, onSearchChange }: Rece
     block.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Utility function to format hash by removing leading zeros
+  const formatHashForDisplay = (hash: string): string => {
+    if (!hash) return '';
+    // Remove leading zeros but keep at least one character
+    const formatted = hash.replace(/^0+/, '');
+    return formatted || '0';
+  };
+
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* Search */}
@@ -726,7 +741,7 @@ function RecentBlocksTable({ blocks, compact, searchTerm, onSearchChange }: Rece
                   <th className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Size
                   </th>
-                  <th className="hidden md:table-cell px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="sm:table-cell px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Hash
                   </th>
                 </>
@@ -761,9 +776,8 @@ function RecentBlocksTable({ blocks, compact, searchTerm, onSearchChange }: Rece
                     <td className="hidden sm:table-cell px-2 sm:px-4 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-600">
                       {formatBytes(block.size)}
                     </td>
-                    <td className="hidden md:table-cell px-2 sm:px-4 py-3 sm:py-4 whitespace-nowrap text-xs font-mono text-gray-600">
-                      <span className="hidden lg:inline">{block.id.substring(0, 16)}...</span>
-                      <span className="lg:hidden">{block.id.substring(0, 8)}...</span>
+                    <td className="sm:table-cell px-2 sm:px-4 py-3 sm:py-4 text-xs font-mono text-gray-600 break-all">
+                      {formatHashForDisplay(block.id)}
                     </td>
                   </>
                 )}
