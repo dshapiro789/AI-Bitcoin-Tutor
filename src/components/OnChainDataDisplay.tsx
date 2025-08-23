@@ -438,7 +438,9 @@ export function OnChainDataDisplay() {
             <div className="text-xs sm:text-sm text-gray-500">
               Updated: {lastUpdate.toLocaleTimeString()}
             </div>
+          </div>
 
+          <div className="flex items-center gap-2 ml-auto">
             <div className="flex items-center gap-2 ml-auto">
               <button
                 onClick={fetchOnChainData}
