@@ -465,43 +465,93 @@ export function OnChainDataDisplay() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-xl sm:rounded-2xl shadow-2xl"
+          className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-2xl shadow-2xl"
         >
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+          {/* Enhanced background patterns */}
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           </div>
           
-          <div className="relative p-4 sm:p-8">
-            <div className="flex flex-col gap-4 sm:gap-6">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="p-2 sm:p-4 bg-white/20 rounded-xl sm:rounded-2xl backdrop-blur-sm">
-                  <Blocks className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+          <div className="relative p-6 sm:p-10">
+            <div className="text-center space-y-6 sm:space-y-8">
+              {/* Section Title */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="space-y-2"
+              >
+                <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-2xl backdrop-blur-sm mb-4">
+                  <DollarSign className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-orange-100 text-xs sm:text-sm font-medium mb-1">Current Block Height</div>
-                  <div className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
-                    #{blockchainStats.blockHeight?.toLocaleString()}
-                  </div>
-                  <div className="flex items-center text-orange-100 text-xs sm:text-sm">
-                    <Timer className="h-3 w-3 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0" />
-                    <span>Next block in ~{formatTimeEstimate(blockchainStats.eta || 600)}</span>
-                  </div>
-                </div>
-              </div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
+                  Bitcoin Market Overview
+                </h2>
+                <p className="text-orange-100 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto">
+                  Real-time market data and network statistics
+                </p>
+              </motion.div>
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-6">
-                <div className="text-center sm:text-left">
-                  <div className="text-orange-200 text-xs sm:text-sm font-medium">Bitcoin Price</div>
-                  <div className="text-lg sm:text-2xl font-bold text-white">
-                    {blockchainStats.usdPrice ? formatUSD(blockchainStats.usdPrice) : 'Loading...'}
+              {/* Price and Market Cap Display */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 max-w-4xl mx-auto"
+              >
+                {/* Bitcoin Price */}
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-white/10 rounded-2xl backdrop-blur-sm group-hover:bg-white/15 transition-all duration-300"></div>
+                  <div className="relative p-6 sm:p-8 text-center">
+                    <div className="text-orange-100 text-sm sm:text-base font-medium mb-2 sm:mb-3">
+                      Bitcoin Price
+                    </div>
+                    <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2">
+                      {blockchainStats.usdPrice ? formatUSD(blockchainStats.usdPrice) : 'Loading...'}
+                    </div>
+                    <div className="text-orange-200 text-xs sm:text-sm">
+                      USD per BTC
+                    </div>
                   </div>
                 </div>
-                <div className="text-center sm:text-left">
-                  <div className="text-orange-200 text-xs sm:text-sm font-medium">Market Cap</div>
-                  <div className="text-lg sm:text-2xl font-bold text-white">
-                    {blockchainStats.marketCap ? formatUSDCompact(blockchainStats.marketCap) : 'Loading...'}
+
+                {/* Market Cap */}
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-white/10 rounded-2xl backdrop-blur-sm group-hover:bg-white/15 transition-all duration-300"></div>
+                  <div className="relative p-6 sm:p-8 text-center">
+                    <div className="text-orange-100 text-sm sm:text-base font-medium mb-2 sm:mb-3">
+                      Market Cap
+                    </div>
+                    <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2">
+                      {blockchainStats.marketCap ? formatUSDCompact(blockchainStats.marketCap) : 'Loading...'}
+                    </div>
+                    <div className="text-orange-200 text-xs sm:text-sm">
+                      Total Market Value
+                    </div>
                   </div>
                 </div>
+              </motion.div>
+
+              {/* Decorative Elements */}
+              <div className="flex justify-center space-x-2 opacity-30">
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      opacity: [0.3, 0.6, 0.3],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: i * 0.3,
+                    }}
+                    className="w-2 h-2 bg-white rounded-full"
+                  />
+                ))}
               </div>
             </div>
           </div>
