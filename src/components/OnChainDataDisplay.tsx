@@ -225,12 +225,29 @@ export function OnChainDataDisplay() {
         stats.blockRewardUSD = (stats.blockReward || 0) * stats.usdPrice;
       }
 
-      setBlockchainStats(stats as BlockchainInfoStats);
-      setLastUpdate(new Date());
+      // Only set blockchain stats if we have essential data
+      // This prevents partial "Loading..." display in cards
+      const hasEssentialData = stats.usdPrice && stats.marketCap && stats.blockHeight && stats.totalBitcoins;
+      
+      if (hasEssentialData) {
+        setBlockchainStats(stats as BlockchainInfoStats);
+        setLastUpdate(new Date());
+      } else {
+        // If essential data is missing, show error instead of partial data
+        const missingData = [];
+        if (!stats.usdPrice) missingData.push('Bitcoin price');
+        if (!stats.marketCap) missingData.push('market cap');
+        if (!stats.blockHeight) missingData.push('block height');
+        if (!stats.totalBitcoins) missingData.push('total supply');
+        
+        setError(`Unable to load essential data: ${missingData.join(', ')}. Please try refreshing.`);
+        setBlockchainStats(null);
+      }
       
     } catch (err) {
       console.error('Error fetching blockchain data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
+      setBlockchainStats(null);
     } finally {
       setLoading(false);
       setFetchProgress({ current: 0, total: 0, currentItem: '' });
