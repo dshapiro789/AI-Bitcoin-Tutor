@@ -129,7 +129,7 @@ export function OnChainDataDisplay() {
       setError(null);
       setLoading(true);
       
-      const baseUrl = '/api/blockchain';
+      const baseUrl = 'https://blockchain.info';
       
       // Define all the data points we need to fetch
       const dataPoints = [
