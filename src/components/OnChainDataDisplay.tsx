@@ -112,17 +112,16 @@ export function OnChainDataDisplay() {
     try {
       setError(null);
       
-      // Use direct Blockstream API calls with CORS proxy
-      const corsProxy = 'https://api.allorigins.win/raw?url=';
-      const baseUrl = 'https://blockstream.info/api';
+      // Use Vite proxy for Blockstream API calls
+      const baseUrl = '/api/blockstream';
       
       // Fetch current block height
-      const heightResponse = await fetch(`${corsProxy}${encodeURIComponent(`${baseUrl}/blocks/tip/height`)}`);
+      const heightResponse = await fetch(`${baseUrl}/blocks/tip/height`);
       if (!heightResponse.ok) throw new Error('Failed to fetch block height');
       const currentHeight = await heightResponse.json();
 
       // Fetch recent blocks
-      const blocksResponse = await fetch(`${corsProxy}${encodeURIComponent(`${baseUrl}/blocks/${currentHeight}`)}`);
+      const blocksResponse = await fetch(`${baseUrl}/blocks/${currentHeight}`);
       if (!blocksResponse.ok) throw new Error('Failed to fetch blocks');
       const blocks = await blocksResponse.json();
       
@@ -130,13 +129,13 @@ export function OnChainDataDisplay() {
       setRecentBlocks(blocks.slice(0, 10));
 
       // Fetch mempool stats
-      const mempoolResponse = await fetch(`${corsProxy}${encodeURIComponent(`${baseUrl}/mempool`)}`);
+      const mempoolResponse = await fetch(`${baseUrl}/mempool`);
       if (!mempoolResponse.ok) throw new Error('Failed to fetch mempool data');
       const mempool = await mempoolResponse.json();
       setMempoolStats(mempool);
 
       // Fetch fee estimates
-      const feesResponse = await fetch(`${corsProxy}${encodeURIComponent(`${baseUrl}/fee-estimates`)}`);
+      const feesResponse = await fetch(`${baseUrl}/fee-estimates`);
       if (!feesResponse.ok) throw new Error('Failed to fetch fee estimates');
       const fees = await feesResponse.json();
       setFeeEstimates(fees);
