@@ -5,7 +5,7 @@ import {
   RefreshCw, AlertCircle, CheckCircle, 
   ArrowUp, ArrowDown, DollarSign, Users,
   Blocks, Gauge, Network, ChevronDown,
-  ChevronUp, Filter, Search, Eye, EyeOff,
+  ChevronUp, Filter, Search, Eye, EyeOff, Info,
   BarChart3, PieChart,
   TrendingDown, Wifi, WifiOff
 } from 'lucide-react';
