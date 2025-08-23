@@ -773,7 +773,7 @@ function Resources() {
                 Bitcoin On-Chain Data
               </h2>
               <p className="text-orange-100 text-sm sm:text-base">
-                Explore real-time Bitcoin blockchain data including transactions, blocks, addresses, mempool activity, and network statistics powered by Blockstream Explorer.
+                Explore real-time blockchain analytics
               </p>
             </div>
 

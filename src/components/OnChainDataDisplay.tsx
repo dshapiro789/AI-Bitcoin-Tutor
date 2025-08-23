@@ -409,7 +409,7 @@ export function OnChainDataDisplay() {
             </div>
             <div>
               <h3 className="text-lg sm:text-2xl font-bold text-gray-900">Bitcoin Network Monitor</h3>
-              <p className="text-xs sm:text-sm text-gray-600">Real-time blockchain analytics via Blockchain.com</p>
+              <p className="text-xs sm:text-sm text-gray-600"></p>
             </div>
           </div>
 
