@@ -428,17 +428,6 @@ export function OnChainDataDisplay() {
             <div className="text-xs sm:text-sm text-gray-500">
               Updated: {lastUpdate.toLocaleTimeString()}
             </div>
-
-            <div className="flex items-center gap-2 ml-auto">
-              <button
-                onClick={fetchOnChainData}
-                disabled={loading || !isOnline}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-xs sm:text-sm"
-              >
-                <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${loading ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Refresh</span>
-              </button>
-            </div>
           </div>
         </div>
       </motion.div>
@@ -727,7 +716,7 @@ export function OnChainDataDisplay() {
         animate={{ opacity: 1 }}
         className="bg-orange-50 border border-orange-200 rounded-xl p-3 sm:p-4"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="space-y-4">
           <div className="flex items-start gap-2 sm:gap-3">
             <Network className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mt-0.5 flex-shrink-0" />
             <div className="text-xs sm:text-sm text-orange-700">
@@ -741,17 +730,30 @@ export function OnChainDataDisplay() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewSettings(prev => ({ ...prev, autoRefresh: !prev.autoRefresh }))}
-              className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
-                viewSettings.autoRefresh
-                  ? 'bg-green-500 text-white'
-                  : 'bg-white text-orange-700 hover:bg-orange-100'
-              }`}
-            >
-              Auto-refresh: {viewSettings.autoRefresh ? 'ON' : 'OFF'}
-            </button>
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-center">
+              <button
+                onClick={() => setViewSettings(prev => ({ ...prev, autoRefresh: !prev.autoRefresh }))}
+                className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                  viewSettings.autoRefresh
+                    ? 'bg-green-500 text-white'
+                    : 'bg-white text-orange-700 hover:bg-orange-100'
+                }`}
+              >
+                Auto-refresh: {viewSettings.autoRefresh ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            
+            <div className="flex justify-center">
+              <button
+                onClick={fetchOnChainData}
+                disabled={loading || !isOnline}
+                className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
+              >
+                <RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh Data</span>
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
