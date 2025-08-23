@@ -465,94 +465,120 @@ export function OnChainDataDisplay() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-2xl shadow-2xl"
+          className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-3xl shadow-2xl"
         >
-          {/* Enhanced background patterns */}
+          {/* Sophisticated background patterns */}
           <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.1),transparent_50%)]"></div>
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            {/* Layered gradient overlays for depth */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.2),transparent_60%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(255,255,255,0.15),transparent_60%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1),transparent_70%)]"></div>
+            
+            {/* Subtle mesh pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px]"></div>
+            </div>
+            
+            {/* Border highlights */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+            <div className="absolute top-0 bottom-0 left-0 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
+            <div className="absolute top-0 bottom-0 right-0 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
           </div>
           
-          <div className="relative p-6 sm:p-10">
-            <div className="text-center space-y-6 sm:space-y-8">
-              {/* Section Title */}
+          <div className="relative p-8 sm:p-12 lg:p-16">
+            <div className="text-center space-y-8 sm:space-y-12">
+              {/* Elegant Section Title */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="space-y-2"
+                className="space-y-4"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-2xl backdrop-blur-sm mb-4">
-                  <DollarSign className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-                </div>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
                   Bitcoin Market Overview
                 </h2>
-                <p className="text-orange-100 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto">
+                <p className="text-orange-100 text-base sm:text-lg lg:text-xl max-w-2xl mx-auto font-medium">
                   Real-time market data and network statistics
                 </p>
               </motion.div>
 
-              {/* Price and Market Cap Display */}
+              {/* Enhanced Price and Market Cap Display */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 max-w-4xl mx-auto"
+                className="max-w-5xl mx-auto"
               >
-                {/* Bitcoin Price */}
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-white/10 rounded-2xl backdrop-blur-sm group-hover:bg-white/15 transition-all duration-300"></div>
-                  <div className="relative p-6 sm:p-8 text-center">
-                    <div className="text-orange-100 text-sm sm:text-base font-medium mb-2 sm:mb-3">
-                      Bitcoin Price
-                    </div>
-                    <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2">
-                      {blockchainStats.usdPrice ? formatUSD(blockchainStats.usdPrice) : 'Loading...'}
-                    </div>
-                    <div className="text-orange-200 text-xs sm:text-sm">
-                      USD per BTC
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                  {/* Bitcoin Price Card */}
+                  <div className="relative group">
+                    {/* Glassmorphism background */}
+                    <div className="absolute inset-0 bg-white/10 rounded-3xl backdrop-blur-md border border-white/20 group-hover:bg-white/15 transition-all duration-500"></div>
+                    
+                    {/* Subtle glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-3xl group-hover:from-white/10 transition-all duration-500"></div>
+                    
+                    <div className="relative p-8 sm:p-10 text-center">
+                      <div className="text-orange-100 text-base sm:text-lg font-semibold mb-4 tracking-wide">
+                        Bitcoin Price
+                      </div>
+                      <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 tracking-tight">
+                        {blockchainStats.usdPrice ? formatUSD(blockchainStats.usdPrice) : 'Loading...'}
+                      </div>
+                      <div className="text-orange-200 text-sm sm:text-base font-medium">
+                        USD per BTC
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Market Cap */}
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-white/10 rounded-2xl backdrop-blur-sm group-hover:bg-white/15 transition-all duration-300"></div>
-                  <div className="relative p-6 sm:p-8 text-center">
-                    <div className="text-orange-100 text-sm sm:text-base font-medium mb-2 sm:mb-3">
-                      Market Cap
-                    </div>
-                    <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2">
-                      {blockchainStats.marketCap ? formatUSDCompact(blockchainStats.marketCap) : 'Loading...'}
-                    </div>
-                    <div className="text-orange-200 text-xs sm:text-sm">
-                      Total Market Value
+                  {/* Market Cap Card */}
+                  <div className="relative group">
+                    {/* Glassmorphism background */}
+                    <div className="absolute inset-0 bg-white/10 rounded-3xl backdrop-blur-md border border-white/20 group-hover:bg-white/15 transition-all duration-500"></div>
+                    
+                    {/* Subtle glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-3xl group-hover:from-white/10 transition-all duration-500"></div>
+                    
+                    <div className="relative p-8 sm:p-10 text-center">
+                      <div className="text-orange-100 text-base sm:text-lg font-semibold mb-4 tracking-wide">
+                        Market Cap
+                      </div>
+                      <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 tracking-tight">
+                        {blockchainStats.marketCap ? formatUSDCompact(blockchainStats.marketCap) : 'Loading...'}
+                      </div>
+                      <div className="text-orange-200 text-sm sm:text-base font-medium">
+                        Total Market Value
+                      </div>
                     </div>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Decorative Elements */}
-              <div className="flex justify-center space-x-2 opacity-30">
+              {/* Enhanced Decorative Elements */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="flex justify-center space-x-3 opacity-40"
+              >
                 {[...Array(3)].map((_, i) => (
                   <motion.div
                     key={i}
                     animate={{
                       scale: [1, 1.2, 1],
-                      opacity: [0.3, 0.6, 0.3],
+                      opacity: [0.4, 0.8, 0.4],
                     }}
                     transition={{
-                      duration: 2,
+                      duration: 2.5,
                       repeat: Infinity,
-                      delay: i * 0.3,
+                      delay: i * 0.4,
+                      ease: "easeInOut"
                     }}
-                    className="w-2 h-2 bg-white rounded-full"
+                    className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full shadow-lg"
                   />
                 ))}
-              </div>
+              </motion.div>
             </div>
           </div>
         </motion.div>
