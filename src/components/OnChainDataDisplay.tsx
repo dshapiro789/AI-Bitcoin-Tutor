@@ -117,12 +117,18 @@ export function OnChainDataDisplay() {
       
       // Fetch current block height
       const heightResponse = await fetch(`${baseUrl}/blocks/tip/height`);
-      if (!heightResponse.ok) throw new Error('Failed to fetch block height');
+      if (!heightResponse.ok) {
+        const errorText = await heightResponse.text().catch(() => 'Unable to read response');
+        throw new Error(`Failed to fetch block height: ${heightResponse.status} ${heightResponse.statusText} - ${errorText}`);
+      }
       const currentHeight = await heightResponse.json();
 
       // Fetch recent blocks
       const blocksResponse = await fetch(`${baseUrl}/blocks/${currentHeight}`);
-      if (!blocksResponse.ok) throw new Error('Failed to fetch blocks');
+      if (!blocksResponse.ok) {
+        const errorText = await blocksResponse.text().catch(() => 'Unable to read response');
+        throw new Error(`Failed to fetch blocks: ${blocksResponse.status} ${blocksResponse.statusText} - ${errorText}`);
+      }
       const blocks = await blocksResponse.json();
       
       setCurrentBlock(blocks[0]);
@@ -130,13 +136,19 @@ export function OnChainDataDisplay() {
 
       // Fetch mempool stats
       const mempoolResponse = await fetch(`${baseUrl}/mempool`);
-      if (!mempoolResponse.ok) throw new Error('Failed to fetch mempool data');
+      if (!mempoolResponse.ok) {
+        const errorText = await mempoolResponse.text().catch(() => 'Unable to read response');
+        throw new Error(`Failed to fetch mempool data: ${mempoolResponse.status} ${mempoolResponse.statusText} - ${errorText}`);
+      }
       const mempool = await mempoolResponse.json();
       setMempoolStats(mempool);
 
       // Fetch fee estimates
       const feesResponse = await fetch(`${baseUrl}/fee-estimates`);
-      if (!feesResponse.ok) throw new Error('Failed to fetch fee estimates');
+      if (!feesResponse.ok) {
+        const errorText = await feesResponse.text().catch(() => 'Unable to read response');
+        throw new Error(`Failed to fetch fee estimates: ${feesResponse.status} ${feesResponse.statusText} - ${errorText}`);
+      }
       const fees = await feesResponse.json();
       setFeeEstimates(fees);
 
