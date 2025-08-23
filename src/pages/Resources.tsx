@@ -389,7 +389,7 @@ function Resources() {
 
   const handleWhitepaperDownload = () => {
     const link = document.createElement('a');
-    link.href = '/bitcoin whitepaper.pdf';
+    link.href = '/bitcoin.pdf';
     link.download = 'bitcoin_whitepaper.pdf';
     document.body.appendChild(link);
     link.click();
@@ -803,7 +803,7 @@ function Resources() {
                 style={{ height: '80vh', minHeight: '600px' }}
               >
                 <iframe
-                  src="/bitcoin whitepaper.pdf#view=FitH"
+                  src="/bitcoin.pdf#view=FitH"
                   className="w-full h-full border-0"
                   style={{ 
                     transform: `scale(${whitepaperZoom / 100})`,

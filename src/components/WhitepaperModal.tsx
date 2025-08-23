@@ -64,7 +64,7 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
 
   const handleDownload = () => {
     const link = document.createElement('a');
-    link.href = '/bitcoin whitepaper.pdf';
+    link.href = '/bitcoin.pdf';
     link.download = 'bitcoin_whitepaper.pdf';
     document.body.appendChild(link);
     link.click();
@@ -223,7 +223,7 @@ export function WhitepaperModal({ isOpen, onClose }: WhitepaperModalProps) {
                 )}
 
                 <iframe
-                  src={`/bitcoin whitepaper.pdf#view=FitH&page=${currentPage}${darkMode ? '&toolbar=0&navpanes=0' : ''}`}
+                  src={`/bitcoin.pdf#view=FitH&page=${currentPage}${darkMode ? '&toolbar=0&navpanes=0' : ''}`}
                   className="w-full h-full"
                   style={{ 
                     transform: `scale(${zoomLevel / 100})`,
