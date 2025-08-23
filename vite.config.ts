@@ -65,15 +65,15 @@ export default defineConfig({
     host: true,
     strictPort: false,
     proxy: {
-      '/api/blockstream': {
-        target: 'https://blockstream.info',
+      '/api/blockchain': {
+        target: 'https://blockchain.info',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/blockstream/, '/api'),
+        rewrite: (path) => path.replace(/^\/api\/blockchain/, ''),
         secure: false,
         proxyTimeout: 60000, // Timeout for proxy connection
         timeout: 60000, // Timeout for target response
         agent: new https.Agent({ keepAlive: false })
-        // Note: Blockstream API is a public API that does not require API keys
+        // Note: Blockchain.info API is a public API that does not require API keys
         // No sensitive credentials are exposed in this proxy configuration
       }
     }
