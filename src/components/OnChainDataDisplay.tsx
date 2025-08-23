@@ -276,8 +276,25 @@ export function OnChainDataDisplay() {
     }).format(amount);
   };
 
+  const formatUSDCompact = (amount: number) => {
+    if (amount >= 1e12) return `$${(amount / 1e12).toFixed(1)}T`;
+    if (amount >= 1e9) return `$${(amount / 1e9).toFixed(1)}B`;
+    if (amount >= 1e6) return `$${(amount / 1e6).toFixed(1)}M`;
+    if (amount >= 1e3) return `$${(amount / 1e3).toFixed(1)}K`;
+    return formatUSD(amount);
+  };
+
   const formatBTC = (amount: number) => {
-    return `${amount.toFixed(8)} BTC`;
+    // For large amounts like total supply, show fewer decimals
+    if (amount >= 1000000) {
+      return `${amount.toFixed(0)} BTC`;
+    } else if (amount >= 1000) {
+      return `${amount.toFixed(2)} BTC`;
+    } else if (amount >= 1) {
+      return `${amount.toFixed(4)} BTC`;
+    } else {
+      return `${amount.toFixed(8)} BTC`;
+    }
   };
 
   const formatHashRate = (hashrate: number) => {
@@ -409,7 +426,7 @@ export function OnChainDataDisplay() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
               {isOnline ? (
-                <Wifi className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+          <div className="grid grid-cols-2 gap-3 sm:gap-6">
               ) : (
                 <WifiOff className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
               )}
@@ -513,7 +530,7 @@ export function OnChainDataDisplay() {
               <div className="p-3 sm:p-4 bg-white/10 rounded-lg sm:rounded-xl backdrop-blur-sm">
                 <div className="text-orange-200 text-xs sm:text-sm font-medium mb-2">Latest Block Hash</div>
                 <div className="font-mono text-white text-xs sm:text-sm break-all">
-                  {blockchainStats.latestHash || 'Loading...'}
+              <div className="text-base sm:text-2xl font-bold text-white break-words">
                 </div>
               </div>
             </div>
@@ -541,7 +558,7 @@ export function OnChainDataDisplay() {
               subValue={blockchainStats?.totalBitcoinsUSD ? formatUSD(blockchainStats.totalBitcoinsUSD) : undefined}
               details={[
                 { label: 'Max Supply', value: '21,000,000 BTC' },
-                { label: 'Remaining', value: `${(21000000 - (blockchainStats?.totalBitcoins || 0)).toFixed(0)} BTC` }
+                { label: 'Remaining', value: `${(21000000 - (blockchainStats?.totalBitcoins || 0)).toLocaleString()} BTC` }
               ]}
             />
 
@@ -551,10 +568,6 @@ export function OnChainDataDisplay() {
               icon={<Zap className="h-5 w-5 sm:h-6 sm:w-6 text-purple-500" />}
               value={blockchainStats?.hashrate ? formatHashRate(blockchainStats.hashrate) : 'Loading...'}
               label="Current Hashrate"
-              details={[
-                { label: 'Hashes to Win', value: blockchainStats?.hashesToWin ? formatLargeNumber(blockchainStats.hashesToWin) : 'Loading...' },
-                { label: 'Win Probability', value: blockchainStats?.probability ? `${(blockchainStats.probability * 100).toFixed(8)}%` : 'Loading...' }
-              ]}
             />
 
             {/* Mempool Activity */}
@@ -609,56 +622,87 @@ export function OnChainDataDisplay() {
         </CollapsibleSection>
 
         {/* Mining Information */}
+        <CollapsibleSection
+          id="mining"
+          title="Mining Information"
+          icon={<Gauge className="h-4 w-4 sm:h-5 sm:w-5" />}
+          expanded={expandedSections.has('mining')}
+          onToggle={() => toggleSection('mining')}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Current Block Reward */}
+            <MetricCard
+              title="Current Block Reward"
+              icon={<Target className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />}
+              value={blockchainStats?.blockReward ? formatBTC(blockchainStats.blockReward) : 'Loading...'}
+              label="Per Block Mined"
+              subValue={blockchainStats?.blockRewardUSD ? formatUSDDetailed(blockchainStats.blockRewardUSD) : undefined}
+            />
+
+            {/* Network Difficulty */}
+            <MetricCard
+              title="Network Difficulty"
+              icon={<Gauge className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />}
+              value={blockchainStats?.difficulty ? `${(blockchainStats.difficulty / 1e12).toFixed(1)}T` : 'Loading...'}
+              label="Current Difficulty"
+              details={[
+                { label: 'Full Value', value: blockchainStats?.difficulty ? blockchainStats.difficulty.toLocaleString() : 'Loading...' }
+              ]}
+            />
+
+            {/* Next Difficulty Retarget */}
+            <MetricCard
+              title="Next Difficulty Retarget"
+              icon={<Target className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500" />}
+              value={blockchainStats?.nextRetarget ? `Block #${blockchainStats.nextRetarget.toLocaleString()}` : 'Loading...'}
+              label="Retarget Block Height"
+              details={[
+                { 
+                  label: 'Blocks Remaining', 
+                  value: blockchainStats?.nextRetarget && blockchainStats?.blockHeight 
+                    ? `${(blockchainStats.nextRetarget - blockchainStats.blockHeight).toLocaleString()}` 
+                    : 'Loading...' 
+                },
+                { 
+                  label: 'Est. Time', 
+                  value: blockchainStats?.nextRetarget && blockchainStats?.blockHeight 
+                    ? `~${Math.round((blockchainStats.nextRetarget - blockchainStats.blockHeight) * 10 / 60)} hours`
+                    : 'Loading...' 
+                }
+              ]}
+            />
+          </div>
+        </CollapsibleSection>
+
+        {/* Advanced Mining Information */}
         {viewSettings.showAdvanced && (
           <CollapsibleSection
-            id="mining"
-            title="Mining Information"
+            id="advanced-mining"
+            title="Advanced Mining Information"
             icon={<Gauge className="h-4 w-4 sm:h-5 sm:w-5" />}
-            expanded={expandedSections.has('mining')}
-            onToggle={() => toggleSection('mining')}
+            expanded={expandedSections.has('advanced-mining')}
+            onToggle={() => toggleSection('advanced-mining')}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {/* Next Difficulty Retarget */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              {/* Advanced Hashrate Details */}
               <MetricCard
-                title="Next Difficulty Retarget"
-                icon={<Target className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />}
-                value={blockchainStats?.nextRetarget ? `Block #${blockchainStats.nextRetarget.toLocaleString()}` : 'Loading...'}
-                label="Retarget Block Height"
-                details={[
-                  { 
-                    label: 'Blocks Remaining', 
-                    value: blockchainStats?.nextRetarget && blockchainStats?.blockHeight 
-                      ? `${(blockchainStats.nextRetarget - blockchainStats.blockHeight).toLocaleString()}` 
-                      : 'Loading...' 
-                  },
-                  { 
-                    label: 'Est. Time', 
-                    value: blockchainStats?.nextRetarget && blockchainStats?.blockHeight 
-                      ? `~${Math.round((blockchainStats.nextRetarget - blockchainStats.blockHeight) * 10 / 60)} hours`
-                      : 'Loading...' 
-                  }
-                ]}
-              />
-
-              {/* Mining Probability */}
-              <MetricCard
-                title="Mining Probability"
-                icon={<Gauge className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-500" />}
-                value={blockchainStats?.probability ? `${(blockchainStats.probability * 100).toFixed(10)}%` : 'Loading...'}
-                label="Per Hash Attempt"
-                details={[
-                  { label: 'Scientific Notation', value: blockchainStats?.probability ? blockchainStats.probability.toExponential(2) : 'Loading...' }
-                ]}
-              />
-
-              {/* Network Hashrate Details */}
-              <MetricCard
-                title="Hashrate Details"
+                title="Advanced Hashrate Details"
                 icon={<Zap className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />}
                 value={blockchainStats?.hashrate ? formatHashRate(blockchainStats.hashrate) : 'Loading...'}
-                label="Current Network Hashrate"
+                label="Detailed Hashrate Information"
                 details={[
                   { label: 'In Gigahash', value: blockchainStats?.hashrate ? `${blockchainStats.hashrate.toLocaleString()} GH/s` : 'Loading...' }
+                ]}
+              />
+
+              {/* Mining Statistics */}
+              <MetricCard
+                title="Mining Statistics"
+                icon={<Activity className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />}
+                value={blockchainStats?.probability ? blockchainStats.probability.toExponential(2) : 'Loading...'}
+                label="Mining Probability (Scientific)"
+                details={[
+                  { label: 'Percentage', value: blockchainStats?.probability ? `${(blockchainStats.probability * 100).toFixed(10)}%` : 'Loading...' }
                 ]}
               />
             </div>
@@ -818,20 +862,8 @@ function MetricCard({ title, icon, value, label, subValue, trend, details }: Met
             )}
             <span className={`text-xs sm:text-sm font-medium ${
               trend.direction === 'up' ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {trend.value}{trend.suffix || '%'}
-            </span>
-          </div>
-        )}
-
-        {details && (
-          <div className="space-y-1 sm:space-y-2 pt-2 border-t border-gray-100">
-            {details.map((detail, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span className="text-xs text-gray-600">{detail.label}</span>
-                <span className={`text-xs font-medium break-words ${detail.color || 'text-gray-900'}`}>
-                  {detail.value}
-                </span>
+              <div className="text-base sm:text-2xl font-bold text-white break-words">
+                {blockchainStats.marketCap ? formatUSDCompact(blockchainStats.marketCap) : 'Loading...'}
               </div>
             ))}
           </div>
