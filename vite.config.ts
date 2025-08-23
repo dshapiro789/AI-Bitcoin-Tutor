@@ -68,7 +68,8 @@ export default defineConfig({
         target: 'https://blockstream.info',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/blockstream/, ''),
-        secure: false
+        secure: false,
+        proxyTimeout: 30000
         // Note: Blockstream API is a public API that does not require API keys
         // No sensitive credentials are exposed in this proxy configuration
       }
