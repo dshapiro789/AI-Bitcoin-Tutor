@@ -89,6 +89,37 @@ export function OnChainDataDisplay() {
     refreshInterval: 30000
   });
 
+  // Retry mechanism with exponential backoff
+  const fetchWithRetry = async (url: string, maxRetries: number = 3): Promise<Response> => {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(url);
+        
+        // If we get a 5xx error, retry
+        if (response.status >= 500 && response.status < 600 && attempt < maxRetries) {
+          const delay = Math.pow(2, attempt) * 1000; // Exponential backoff: 1s, 2s, 4s
+          console.log(`API request failed with ${response.status}, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries + 1})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        return response;
+      } catch (error) {
+        // Network errors (like "Failed to fetch")
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt) * 1000;
+          console.log(`Network error, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries + 1})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        throw error;
+      }
+    }
+    
+    // This should never be reached, but TypeScript needs it
+    throw new Error('Max retries exceeded');
+  };
+
   // Network status monitoring
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -116,7 +147,7 @@ export function OnChainDataDisplay() {
       const baseUrl = '/api/blockstream';
       
       // Fetch current block height
-      const heightResponse = await fetch(`${baseUrl}/blocks/tip/height`);
+      const heightResponse = await fetchWithRetry(`${baseUrl}/blocks/tip/height`);
       if (!heightResponse.ok) {
         const errorText = await heightResponse.text().catch(() => 'Unable to read response');
         throw new Error(`Failed to fetch block height: ${heightResponse.status} ${heightResponse.statusText} - ${errorText}`);
@@ -124,7 +155,7 @@ export function OnChainDataDisplay() {
       const currentHeight = await heightResponse.json();
 
       // Fetch recent blocks
-      const blocksResponse = await fetch(`${baseUrl}/blocks/${currentHeight}`);
+      const blocksResponse = await fetchWithRetry(`${baseUrl}/blocks/${currentHeight}`);
       if (!blocksResponse.ok) {
         const errorText = await blocksResponse.text().catch(() => 'Unable to read response');
         throw new Error(`Failed to fetch blocks: ${blocksResponse.status} ${blocksResponse.statusText} - ${errorText}`);
@@ -135,7 +166,7 @@ export function OnChainDataDisplay() {
       setRecentBlocks(blocks.slice(0, 10));
 
       // Fetch mempool stats
-      const mempoolResponse = await fetch(`${baseUrl}/mempool`);
+      const mempoolResponse = await fetchWithRetry(`${baseUrl}/mempool`);
       if (!mempoolResponse.ok) {
         const errorText = await mempoolResponse.text().catch(() => 'Unable to read response');
         throw new Error(`Failed to fetch mempool data: ${mempoolResponse.status} ${mempoolResponse.statusText} - ${errorText}`);
@@ -144,7 +175,7 @@ export function OnChainDataDisplay() {
       setMempoolStats(mempool);
 
       // Fetch fee estimates
-      const feesResponse = await fetch(`${baseUrl}/fee-estimates`);
+      const feesResponse = await fetchWithRetry(`${baseUrl}/fee-estimates`);
       if (!feesResponse.ok) {
         const errorText = await feesResponse.text().catch(() => 'Unable to read response');
         throw new Error(`Failed to fetch fee estimates: ${feesResponse.status} ${feesResponse.statusText} - ${errorText}`);
