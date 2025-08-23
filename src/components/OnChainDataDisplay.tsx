@@ -14,13 +14,10 @@ interface BlockchainInfoStats {
   // Network basics
   difficulty: number;
   blockHeight: number;
-  latestHash: string;
   blockReward: number; // in BTC
   totalBitcoins: number; // in BTC
   
   // Mining stats
-  probability: number;
-  hashesToWin: number;
   nextRetarget: number;
   hashrate: number; // in GH/s
   
@@ -57,7 +54,6 @@ interface ExchangeRates {
 interface ViewSettings {
   autoRefresh: boolean;
   refreshInterval: number;
-  showAdvanced: boolean;
 }
 
 export function OnChainDataDisplay() {
@@ -75,8 +71,7 @@ export function OnChainDataDisplay() {
   });
   const [viewSettings, setViewSettings] = useState<ViewSettings>({
     autoRefresh: false, // Disabled by default due to rate limits
-    refreshInterval: 180000, // 3 minutes minimum due to API constraints
-    showAdvanced: false
+    refreshInterval: 180000 // 3 minutes minimum due to API constraints
   });
 
   // Network status monitoring
@@ -140,11 +135,8 @@ export function OnChainDataDisplay() {
       const dataPoints = [
         { key: 'difficulty', endpoint: '/q/getdifficulty', label: 'Network Difficulty' },
         { key: 'blockHeight', endpoint: '/q/getblockcount', label: 'Block Height' },
-        { key: 'latestHash', endpoint: '/q/latesthash', label: 'Latest Block Hash' },
         { key: 'blockReward', endpoint: '/q/bcperblock', label: 'Block Reward' },
         { key: 'totalBitcoins', endpoint: '/q/totalbc', label: 'Total Bitcoin Supply' },
-        { key: 'probability', endpoint: '/q/probability', label: 'Mining Probability' },
-        { key: 'hashesToWin', endpoint: '/q/hashestowin', label: 'Hashes to Win' },
         { key: 'nextRetarget', endpoint: '/q/nextretarget', label: 'Next Difficulty Retarget' },
         { key: 'avgTxSize', endpoint: '/q/avgtxsize', label: 'Average Transaction Size' },
         { key: 'avgTxValue', endpoint: '/q/avgtxvalue', label: 'Average Transaction Value' },
@@ -182,12 +174,10 @@ export function OnChainDataDisplay() {
           let parsedValue: number | string = rawValue.trim();
 
           // Parse numeric values
-          if (dataPoint.key !== 'latestHash') {
-            parsedValue = parseFloat(parsedValue as string);
-            if (isNaN(parsedValue)) {
-              console.warn(`Invalid numeric value for ${dataPoint.key}: ${rawValue}`);
-              continue;
-            }
+          parsedValue = parseFloat(parsedValue as string);
+          if (isNaN(parsedValue)) {
+            console.warn(`Invalid numeric value for ${dataPoint.key}: ${rawValue}`);
+            continue;
           }
 
           // Convert Satoshi values to BTC where applicable
@@ -287,7 +277,7 @@ export function OnChainDataDisplay() {
   const formatBTC = (amount: number) => {
     // For large amounts like total supply, show fewer decimals
     if (amount >= 1000000) {
-      return `${amount.toFixed(0)} BTC`;
+      return `${Math.round(amount).toLocaleString()} BTC`;
     } else if (amount >= 1000) {
       return `${amount.toFixed(2)} BTC`;
     } else if (amount >= 1) {
@@ -438,9 +428,7 @@ export function OnChainDataDisplay() {
             <div className="text-xs sm:text-sm text-gray-500">
               Updated: {lastUpdate.toLocaleTimeString()}
             </div>
-          </div>
 
-          <div className="flex items-center gap-2 ml-auto">
             <div className="flex items-center gap-2 ml-auto">
               <button
                 onClick={fetchOnChainData}
@@ -501,7 +489,7 @@ export function OnChainDataDisplay() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+              <div className="grid grid-cols-2 gap-3 sm:gap-6">
                 <div className="text-center sm:text-left">
                   <div className="text-orange-200 text-xs sm:text-sm font-medium">Bitcoin Price</div>
                   <div className="text-lg sm:text-2xl font-bold text-white">
@@ -511,28 +499,8 @@ export function OnChainDataDisplay() {
                 <div className="text-center sm:text-left">
                   <div className="text-orange-200 text-xs sm:text-sm font-medium">Market Cap</div>
                   <div className="text-lg sm:text-2xl font-bold text-white">
-                    {blockchainStats.marketCap ? formatUSD(blockchainStats.marketCap) : 'Loading...'}
+                    {blockchainStats.marketCap ? formatUSDCompact(blockchainStats.marketCap) : 'Loading...'}
                   </div>
-                </div>
-                <div className="text-center sm:text-left">
-                  <div className="text-orange-200 text-xs sm:text-sm font-medium">Block Reward</div>
-                  <div className="text-lg sm:text-2xl font-bold text-white">
-                    {blockchainStats.blockReward ? formatBTC(blockchainStats.blockReward) : 'Loading...'}
-                  </div>
-                </div>
-                <div className="text-center sm:text-left">
-                  <div className="text-orange-200 text-xs sm:text-sm font-medium">Difficulty</div>
-                  <div className="text-lg sm:text-2xl font-bold text-white">
-                    {blockchainStats.difficulty ? `${(blockchainStats.difficulty / 1e12).toFixed(1)}T` : 'Loading...'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Latest Block Hash */}
-              <div className="p-3 sm:p-4 bg-white/10 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                <div className="text-orange-200 text-xs sm:text-sm font-medium mb-2">Latest Block Hash</div>
-                <div className="font-mono text-white text-xs sm:text-sm break-all">
-                  {blockchainStats.latestHash || 'Loading...'}
                 </div>
               </div>
             </div>
@@ -675,41 +643,6 @@ export function OnChainDataDisplay() {
             />
           </div>
         </CollapsibleSection>
-
-        {/* Advanced Mining Information */}
-        {viewSettings.showAdvanced && (
-          <CollapsibleSection
-            id="advanced-mining"
-            title="Advanced Mining Information"
-            icon={<Gauge className="h-4 w-4 sm:h-5 sm:w-5" />}
-            expanded={expandedSections.has('advanced-mining')}
-            onToggle={() => toggleSection('advanced-mining')}
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              {/* Advanced Hashrate Details */}
-              <MetricCard
-                title="Advanced Hashrate Details"
-                icon={<Zap className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />}
-                value={blockchainStats?.hashrate ? formatHashRate(blockchainStats.hashrate) : 'Loading...'}
-                label="Detailed Hashrate Information"
-                details={[
-                  { label: 'In Gigahash', value: blockchainStats?.hashrate ? `${blockchainStats.hashrate.toLocaleString()} GH/s` : 'Loading...' }
-                ]}
-              />
-
-              {/* Mining Statistics */}
-              <MetricCard
-                title="Mining Statistics"
-                icon={<Activity className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />}
-                value={blockchainStats?.probability ? blockchainStats.probability.toExponential(2) : 'Loading...'}
-                label="Mining Probability (Scientific)"
-                details={[
-                  { label: 'Percentage', value: blockchainStats?.probability ? `${(blockchainStats.probability * 100).toFixed(10)}%` : 'Loading...' }
-                ]}
-              />
-            </div>
-          </CollapsibleSection>
-        )}
       </div>
 
       {/* API Information Panel */}
@@ -733,17 +666,6 @@ export function OnChainDataDisplay() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewSettings(prev => ({ ...prev, showAdvanced: !prev.showAdvanced }))}
-              className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
-                viewSettings.showAdvanced
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-white text-orange-700 hover:bg-orange-100'
-              }`}
-            >
-              {viewSettings.showAdvanced ? 'Hide' : 'Show'} Advanced
-            </button>
-            
             <button
               onClick={() => setViewSettings(prev => ({ ...prev, autoRefresh: !prev.autoRefresh }))}
               className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
@@ -871,17 +793,15 @@ function MetricCard({ title, icon, value, label, subValue, trend, details }: Met
         )}
 
         {details && details.length > 0 && (
-          <div className="pt-2 border-t border-gray-100">
-            <div className="space-y-1">
-              {details.map((detail, index) => (
-                <div key={index} className="flex justify-between items-center text-xs">
-                  <span className="text-gray-500">{detail.label}:</span>
-                  <span className={`font-medium ${detail.color || 'text-gray-900'}`}>
-                    {detail.value}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="pt-2 border-t border-gray-100 space-y-1">
+            {details.map((detail, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">{detail.label}</span>
+                <span className={`text-xs font-medium ${detail.color || 'text-gray-700'}`}>
+                  {detail.value}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </div>
