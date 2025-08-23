@@ -869,15 +869,17 @@ function MetricCard({ title, icon, value, label, subValue, trend, details }: Met
         )}
 
         {details && details.length > 0 && (
-          <div className="pt-2 border-t border-gray-100 space-y-1">
-            {details.map((detail, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">{detail.label}</span>
-                <span className={`text-xs font-medium ${detail.color || 'text-gray-700'}`}>
-                  {detail.value}
-                </span>
-              </div>
-            ))}
+          <div className="pt-2 border-t border-gray-100">
+            <div className="space-y-1">
+              {details.map((detail, index) => (
+                <div key={index} className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500">{detail.label}:</span>
+                  <span className={`font-medium ${detail.color || 'text-gray-900'}`}>
+                    {detail.value}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
