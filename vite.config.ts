@@ -70,7 +70,8 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/blockstream/, '/api'),
         secure: false,
-        proxyTimeout: 60000,
+        proxyTimeout: 60000, // Timeout for proxy connection
+        timeout: 60000, // Timeout for target response
         agent: new https.Agent({ keepAlive: false })
         // Note: Blockstream API is a public API that does not require API keys
         // No sensitive credentials are exposed in this proxy configuration
