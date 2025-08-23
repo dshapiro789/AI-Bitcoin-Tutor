@@ -68,7 +68,7 @@ export default defineConfig({
         target: 'https://blockstream.info',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/blockstream/, ''),
-        secure: true
+        secure: false
       }
     }
   },
