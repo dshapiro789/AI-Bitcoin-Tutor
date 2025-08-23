@@ -167,32 +167,33 @@ export function OnChainDataDisplay() {
           
           if (!response.ok) {
             console.warn(`Failed to fetch ${dataPoint.key}: ${response.status}`);
-            continue;
-          }
+            // Don't continue here - we still want the delay
+          } else {
+            const rawValue = await response.text();
+            let parsedValue: number | string = rawValue.trim();
 
-          const rawValue = await response.text();
-          let parsedValue: number | string = rawValue.trim();
+            // Parse numeric values
+            parsedValue = parseFloat(parsedValue as string);
+            if (isNaN(parsedValue)) {
+              console.warn(`Invalid numeric value for ${dataPoint.key}: ${rawValue}`);
+            } else {
+              // Convert Satoshi values to BTC where applicable
+              if (['totalBitcoins', 'avgTxValue'].includes(dataPoint.key)) {
+                parsedValue = (parsedValue as number) / 100000000;
+              }
 
-          // Parse numeric values
-          parsedValue = parseFloat(parsedValue as string);
-          if (isNaN(parsedValue)) {
-            console.warn(`Invalid numeric value for ${dataPoint.key}: ${rawValue}`);
-            continue;
-          }
-
-          // Convert Satoshi values to BTC where applicable
-          if (['totalBitcoins', 'avgTxValue'].includes(dataPoint.key)) {
-            parsedValue = (parsedValue as number) / 100000000;
-          }
-
-          (stats as any)[dataPoint.key] = parsedValue;
-
-          // Add delay between requests (10 seconds as per API requirements)
-          if (i < dataPoints.length - 1) {
-            await delay(10000);
+              (stats as any)[dataPoint.key] = parsedValue;
+            }
           }
         } catch (err) {
           console.warn(`Error fetching ${dataPoint.key}:`, err);
+          // Don't continue here either - we still want the delay
+        }
+
+        // CRITICAL: Always add delay between requests (10 seconds as per API requirements)
+        // This ensures consistent timing regardless of success/failure
+        if (i < dataPoints.length - 1) {
+          await delay(10000);
         }
       }
 
