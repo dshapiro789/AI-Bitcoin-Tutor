@@ -663,14 +663,6 @@ export function OnChainDataDisplay() {
               label="Per Transaction (1000 blocks avg)"
             />
 
-            {/* Block Reward */}
-            <MetricCard
-              title="Current Block Reward"
-              icon={<Target className="h-5 w-5 sm:h-6 sm:w-6 text-purple-500" />}
-              value={blockchainStats?.blockReward ? formatBTC(blockchainStats.blockReward) : 'Loading...'}
-              label="Per Block Mined"
-              subValue={blockchainStats?.blockRewardUSD ? formatUSDDetailed(blockchainStats.blockRewardUSD) : undefined}
-            />
           </div>
         </CollapsibleSection>
 
