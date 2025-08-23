@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import wasm from 'vite-plugin-wasm';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import https from 'https';
 
 // Creative build optimization with chunking strategy
 const createChunkingStrategy = () => ({
@@ -69,7 +70,8 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/blockstream/, '/api'),
         secure: false,
-        proxyTimeout: 30000
+        proxyTimeout: 30000,
+        agent: new https.Agent({ keepAlive: false })
         // Note: Blockstream API is a public API that does not require API keys
         // No sensitive credentials are exposed in this proxy configuration
       }
