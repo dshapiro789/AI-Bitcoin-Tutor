@@ -393,6 +393,22 @@ export function OnChainDataDisplay() {
         </div>
       </motion.div>
 
+      {/* Beta Notice */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4 flex items-start gap-3"
+      >
+        <Info className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+        <div className="text-xs sm:text-sm text-blue-700">
+          <p className="font-medium mb-1">Beta Feature Notice</p>
+          <p>
+            This feature is currently in beta. You might experience occasional loading issues due to external API dependencies. Thank you for your patience!
+          </p>
+        </div>
+      </motion.div>
+
       {/* Current Block Hero Section - Mobile Optimized */}
       {currentBlock && (
         <motion.div
