@@ -426,7 +426,7 @@ export function OnChainDataDisplay() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
               {isOnline ? (
-          <div className="grid grid-cols-2 gap-3 sm:gap-6">
+                <Wifi className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
               ) : (
                 <WifiOff className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
               )}
@@ -530,7 +530,7 @@ export function OnChainDataDisplay() {
               <div className="p-3 sm:p-4 bg-white/10 rounded-lg sm:rounded-xl backdrop-blur-sm">
                 <div className="text-orange-200 text-xs sm:text-sm font-medium mb-2">Latest Block Hash</div>
                 <div className="font-mono text-white text-xs sm:text-sm break-all">
-              <div className="text-base sm:text-2xl font-bold text-white break-words">
+                  {blockchainStats.latestHash || 'Loading...'}
                 </div>
               </div>
             </div>
@@ -862,10 +862,24 @@ function MetricCard({ title, icon, value, label, subValue, trend, details }: Met
             )}
             <span className={`text-xs sm:text-sm font-medium ${
               trend.direction === 'up' ? 'text-green-600' : 'text-red-600'
-              <div className="text-base sm:text-2xl font-bold text-white break-words">
-                {blockchainStats.marketCap ? formatUSDCompact(blockchainStats.marketCap) : 'Loading...'}
-              </div>
-            ))}
+            }`}>
+              {trend.value}{trend.suffix}
+            </span>
+          </div>
+        )}
+
+        {details && details.length > 0 && (
+          <div className="pt-2 border-t border-gray-100">
+            <div className="space-y-1">
+              {details.map((detail, index) => (
+                <div key={index} className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500">{detail.label}:</span>
+                  <span className={`font-medium ${detail.color || 'text-gray-900'}`}>
+                    {detail.value}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
