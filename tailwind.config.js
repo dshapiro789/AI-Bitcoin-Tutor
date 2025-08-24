@@ -11,28 +11,30 @@ export default {
             h1: {
               color: '#1e293b',
               fontWeight: '800',
-              marginBottom: '1.5rem'
+              marginBottom: '2rem',
+              paddingBottom: '1rem',
+              borderBottom: '2px solid #f97316'
             },
             h2: {
               color: '#1e293b',
               fontWeight: '700',
               marginTop: '2rem',
-              marginBottom: '1rem'
+              marginBottom: '1.5rem',
+              paddingBottom: '0.75rem',
+              borderBottom: '2px solid #f97316'
             },
             h3: {
               color: '#1e293b',
               fontWeight: '600',
               marginTop: '1.5rem',
-              marginBottom: '0.75rem'
+              marginBottom: '1rem',
+              paddingBottom: '0.5rem',
+              borderBottom: '1px solid #f97316'
             },
             p: {
               marginBottom: '1.5rem',
-              paddingBottom: '1rem',
-              borderBottom: '1px solid #f1f5f9',
               '&:last-child': {
-                borderBottom: 'none',
                 marginBottom: '0',
-                paddingBottom: '0'
               }
             },
             'ul > li': {
