@@ -179,27 +179,27 @@ export function ChatMessage({
         <div className={`flex items-center justify-between mb-2 ${
           isUser ? 'text-orange-100/90' : 'text-gray-500'
         }`}>
-          <div className="flex items-center space-x-2 flex-grow min-w-0">
+          <div className="flex items-center space-x-2 flex-grow min-w-0 mr-3">
             {CategoryIcon && CategoryIcon !== MessageSquare && <CategoryIcon className="h-4 w-4" />}
             {!isUser && (
               model && (
                 <>
                   <Bot className="h-4 w-4" />
-                  <span className="text-sm font-medium flex-grow min-w-0">{model}</span>
+                  <span className="text-sm font-medium flex-grow min-w-0 truncate">{model}</span>
                 </>
               )
             )}
           </div>
-          <div className="flex items-center space-x-2 flex-shrink-0">
+          <div className="flex items-center space-x-1 flex-shrink-0">
             <Clock className="h-4 w-4" />
-            <span className="text-sm">{timestamp.toLocaleTimeString()}</span>
+            <span className="text-xs sm:text-sm">{timestamp.toLocaleTimeString()}</span>
           </div>
         </div>
 
         {/* Message Content - Fixed text cutoff with proper overflow handling */}
         <div 
           ref={contentRef}
-          className={`prose prose-lg break-words overflow-x-hidden ${
+          className={`prose prose-lg break-words overflow-x-hidden mt-4 ${
             isUser 
               ? 'prose-invert text-white' 
               : 'text-gray-800'
