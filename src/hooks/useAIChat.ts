@@ -134,7 +134,7 @@ export function useAIChat() {
     
     const welcomeMessage: Message = {
       id: '1',
-      text: `Welcome back! I see you're at the **${knowledgeLevel}** level. I'm here to help you learn more about Bitcoin. What would you like to explore today?`,
+      text: `Welcome! I see you're at the **${knowledgeLevel}** level. I'm here to help you learn more about Bitcoin. What would you like to explore today?`,
       isUser: false,
       timestamp: new Date(),
       quickReplies: questions
