@@ -25,6 +25,16 @@ export default {
               marginTop: '1.5rem',
               marginBottom: '0.75rem'
             },
+            p: {
+              marginBottom: '1.5rem',
+              paddingBottom: '1rem',
+              borderBottom: '1px solid #f1f5f9',
+              '&:last-child': {
+                borderBottom: 'none',
+                marginBottom: '0',
+                paddingBottom: '0'
+              }
+            },
             'ul > li': {
               paddingLeft: '1.5rem',
               marginTop: '0.5rem',
