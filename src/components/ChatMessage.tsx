@@ -180,7 +180,7 @@ export function ChatMessage({
           isUser ? 'text-orange-100/90' : 'text-gray-500'
         }`}>
           <div className="flex items-center space-x-2 flex-grow min-w-0">
-            {CategoryIcon && <CategoryIcon className="h-4 w-4" />}
+            {CategoryIcon && CategoryIcon !== MessageSquare && <CategoryIcon className="h-4 w-4" />}
             {!isUser && (
               model && (
                 <>
