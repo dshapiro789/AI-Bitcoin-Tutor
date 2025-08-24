@@ -536,7 +536,7 @@ function AiChat() {
                               value={newModelId}
                               onChange={(e) => setNewModelId(e.target.value)}
                               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                              placeholder="e.g., gpt-4"
+                              placeholder="e.g., perplexity/sonar-reasoning (exact API model identifier)"
                             />
                           </div>
                           <div>
@@ -548,7 +548,7 @@ function AiChat() {
                               value={newModelName}
                               onChange={(e) => setNewModelName(e.target.value)}
                               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                              placeholder="e.g., GPT-4"
+                              placeholder="e.g., Perplexity Sonar Reasoning (display name for UI)"
                             />
                           </div>
                           <div>
