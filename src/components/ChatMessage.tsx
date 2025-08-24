@@ -184,7 +184,7 @@ export function ChatMessage({
             {model && (
               <>
                 <Bot className="h-4 w-4" />
-                <span className="text-sm font-medium truncate max-w-[150px]">{model}</span>
+                <span className="text-sm font-medium flex-grow min-w-0">{model}</span>
               </>
             )}
           </div>
