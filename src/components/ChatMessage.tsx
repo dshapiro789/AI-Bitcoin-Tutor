@@ -179,16 +179,19 @@ export function ChatMessage({
         <div className={`flex items-center justify-between mb-2 ${
           isUser ? 'text-orange-100/90' : 'text-gray-500'
         }`}>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-grow min-w-0">
             {CategoryIcon && <CategoryIcon className="h-4 w-4" />}
-            {model && (
+            {!isUser && model && (
               <>
                 <Bot className="h-4 w-4" />
                 <span className="text-sm font-medium flex-grow min-w-0">{model}</span>
               </>
             )}
+            {isUser && (
+              <MessageSquare className="h-4 w-4" />
+            )}
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <Clock className="h-4 w-4" />
             <span className="text-sm">{timestamp.toLocaleTimeString()}</span>
           </div>
