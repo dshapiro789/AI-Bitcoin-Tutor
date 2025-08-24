@@ -181,14 +181,11 @@ export function ChatMessage({
         }`}>
           <div className="flex items-center space-x-2">
             {CategoryIcon && <CategoryIcon className="h-4 w-4" />}
-            {!isUser && model && (
+            {model && (
               <>
                 <Bot className="h-4 w-4" />
                 <span className="text-sm font-medium flex-grow min-w-0">{model}</span>
               </>
-            )}
-            {isUser && (
-              <MessageSquare className="h-4 w-4" />
             )}
           </div>
           <div className="flex items-center space-x-2">
