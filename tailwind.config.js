@@ -13,7 +13,7 @@ export default {
               fontWeight: '800',
               marginBottom: '2rem',
               paddingBottom: '1rem',
-              borderBottom: '2px solid #f97316'
+              borderBottom: '3px solid #f97316'
             },
             h2: {
               color: '#1e293b',
