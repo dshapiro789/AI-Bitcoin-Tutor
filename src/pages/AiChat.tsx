@@ -340,7 +340,7 @@ function AiChat() {
 
   // Check if a model is the default model (cannot be deleted)
   const isDefaultModel = (modelId: string) => {
-    return modelId === 'deepseek/deepseek-chat';
+    return modelId === 'deepseek/deepseek-chat' || modelId === 'anthropic/claude-3.5-sonnet';
   };
 
   // Show loading screen during initialization
