@@ -52,7 +52,6 @@ export function DonationSection() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 border border-orange-100"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* QR Code Section */}
             <div className="text-center order-2 md:order-1">
