@@ -464,34 +464,6 @@ function AiChat() {
                 
                 {/* Action Buttons - Modern Black Design */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
-                  {/* Default Model Selector */}
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                      AI Model:
-                    </label>
-                    <select
-                      value={models.find(m => m.active)?.id || ''}
-                      onChange={(e) => {
-                        const selectedModelId = e.target.value;
-                        // Deactivate all models first
-                        models.forEach(model => {
-                          if (model.active) {
-                            updateModel(model.id, { active: false });
-                          }
-                        });
-                        // Activate selected model
-                        updateModel(selectedModelId, { active: true });
-                      }}
-                      className="px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm font-medium min-w-[160px]"
-                    >
-                      {models.filter(m => !m.apiKeyRequired).map(model => (
-                        <option key={model.id} value={model.id}>
-                          {model.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
                   {user && (
                     <>
                       <button
@@ -694,10 +666,10 @@ function AiChat() {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => updateModel(model.id, { ...model, active: true })}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] ${
+                        className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] ${
                           model.active
-                            ? 'bg-gray-900 text-white hover:bg-gray-800'
-                            : 'bg-gray-900 text-white hover:bg-gray-800'
+                            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/25 ring-2 ring-orange-300'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
                         }`}
                       >
                         {model.active ? 'Active' : 'Use Model'}
