@@ -81,7 +81,7 @@ export const defaultModels: AIModel[] = [
   },
   {
     id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
-    name: 'Venice AI (Uncensored)',
+    name: 'Venice AI',
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
