@@ -662,7 +662,7 @@ function AiChat() {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">{model.provider}</p>
+                      <p className="text-sm text-gray-500 mt-2">{model.provider}</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
