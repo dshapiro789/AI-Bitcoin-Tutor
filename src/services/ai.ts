@@ -75,21 +75,21 @@ export const defaultModels: AIModel[] = [
     apiEndpoint: 'https://openrouter.ai/api/v1',
     apiKey: openRouterConfig.apiKey,
     active: true,
-    contextLength: 10000,
-    temperature: 0.7,
-    maxTokens: 2000
+    contextLength: 4096,
+    temperature: 0.4,
+    maxTokens: 1000
   },
   {
-    id: 'anthropic/claude-3.5-sonnet',
-    name: 'Claude 3.5 Sonnet',
+    id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
+    name: 'Venice AI (Uncensored)',
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
     apiKey: openRouterConfig.apiKey,
     active: false,
-    contextLength: 200000,
-    temperature: 0.7,
-    maxTokens: 4000
+    contextLength: 4096,
+    temperature: 0.15,
+    maxTokens: 1000
   }
 ];
 
