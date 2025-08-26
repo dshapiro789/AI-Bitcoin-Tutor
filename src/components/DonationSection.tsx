@@ -62,7 +62,7 @@ export function DonationSection() {
                 </div>
               </div>
                 
-              <div className="relative inline-block">
+                <div className="relative inline-block">
                 <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg border-2 border-orange-100">
                   <img 
                     src="/BTC.jpg" 
@@ -103,6 +103,7 @@ export function DonationSection() {
                     </button>
                   </div>
                 </div>
+                </div>
                 
                 {copied && (
                   <motion.p
@@ -113,7 +114,6 @@ export function DonationSection() {
                     ✓ Address copied to clipboard!
                   </motion.p>
                 )}
-              </div>
 
               {/* How Donations Help */}
               <div className="bg-orange-50 rounded-xl p-4 md:p-6 border border-orange-100">
