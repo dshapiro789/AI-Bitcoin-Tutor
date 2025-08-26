@@ -17,6 +17,7 @@ import { LoadingScreen } from '../components/LoadingScreen';
 import { Toast } from '../components/Toast';
 import { useAIChat } from '../hooks/useAIChat';
 import { useChatHistory } from '../hooks/useChatHistory';
+import { defaultModels } from '../services/ai';
 
 function AiChat() {
   const {
@@ -340,7 +341,7 @@ function AiChat() {
 
   // Check if a model is the default model (cannot be deleted)
   const isDefaultModel = (modelId: string) => {
-    return modelId === 'deepseek/deepseek-chat' || modelId === 'anthropic/claude-3.5-sonnet';
+    return defaultModels.some(model => model.id === modelId);
   };
 
   // Show loading screen during initialization
