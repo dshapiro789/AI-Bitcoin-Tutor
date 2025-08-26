@@ -53,19 +53,20 @@ export function DonationSection() {
           className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 border border-orange-100"
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* QR Code Section */}
-            <div className="text-center">
+            <div className="text-center order-2 md:order-1">
               <div className="inline-flex items-center justify-center mb-6">
                 <QrCode className="h-6 w-6 text-orange-500 mr-2" />
                 <span className="text-lg font-semibold text-gray-900">Scan to Donate</span>
               </div>
               
               <div className="relative inline-block">
-                <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-orange-100">
+                <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg border-2 border-orange-100">
                   <img 
                     src="/BTC.jpg" 
                     alt="Bitcoin donation QR code" 
-                    className="w-48 h-48 mx-auto"
+                    className="w-40 h-40 md:w-48 md:h-48 mx-auto"
                   />
                 </div>
               </div>
@@ -76,27 +77,27 @@ export function DonationSection() {
             </div>
 
             {/* Address Section */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6 order-1 md:order-2">
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
                   Bitcoin Donation Address
                 </h3>
                 
-                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
                   <div className="flex items-center justify-between">
-                    <code className="text-sm font-mono text-gray-800 break-all pr-4">
+                    <code className="text-xs md:text-sm font-mono text-gray-800 break-all pr-2 md:pr-4">
                       {btcAddress}
                     </code>
                     
                     <button
                       onClick={handleCopyAddress}
-                      className="flex-shrink-0 p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                      className="flex-shrink-0 p-1.5 md:p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
                       title={copied ? "Copied!" : "Copy address"}
                     >
                       {copied ? (
-                        <CheckCircle className="h-5 w-5" />
+                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5" />
                       ) : (
-                        <Copy className="h-5 w-5" />
+                        <Copy className="h-4 w-4 md:h-5 md:w-5" />
                       )}
                     </button>
                   </div>
@@ -106,7 +107,7 @@ export function DonationSection() {
                   <motion.p
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-sm text-green-600 mt-2 font-medium"
+                    className="text-xs md:text-sm text-green-600 mt-2 font-medium"
                   >
                     ✓ Address copied to clipboard!
                   </motion.p>
@@ -114,9 +115,9 @@ export function DonationSection() {
               </div>
 
               {/* How Donations Help */}
-              <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+              <div className="bg-orange-50 rounded-xl p-4 md:p-6 border border-orange-100">
                 <h4 className="font-semibold text-gray-900 mb-3">How Your Donation Helps:</h4>
-                <ul className="space-y-2 text-sm text-gray-700">
+                <ul className="space-y-2 text-xs md:text-sm text-gray-700">
                   <li className="flex items-start">
                     <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0" />
                     Developing new AI features and improvements
@@ -138,7 +139,7 @@ export function DonationSection() {
 
               {/* Thank You Message */}
               <div className="text-center lg:text-left">
-                <p className="text-gray-600 italic">
+                <p className="text-sm md:text-base text-gray-600 italic">
                   "Every satoshi counts and helps us build a better Bitcoin education platform for everyone. 
                   Thank you for supporting our mission to spread Bitcoin knowledge worldwide."
                 </p>
