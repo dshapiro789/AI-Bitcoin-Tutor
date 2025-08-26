@@ -277,7 +277,8 @@ What would you like to learn about today?`,
         // Filter out old DeepSeek model IDs to prevent duplicates
         const filteredData = data.filter(model => 
           model.model_id !== 'deepseek/deepseek-chat-v3-0324:free' && // Old model ID
-          model.model_id !== 'gemma-2b-it' // Also filter out Gemma models
+          model.model_id !== 'gemma-2b-it' && // Also filter out Gemma models
+          !defaultModels.some(dm => dm.id === model.model_id) // Filter out models that are now defaults
         );
         
         const userModels: AIModel[] = filteredData.map(model => ({
@@ -325,7 +326,7 @@ What would you like to learn about today?`,
           });
         } else if (activeModels.length === 0) {
           // No active model found - set the default model as active
-          const defaultModel = mergedModels.find(m => m.id === 'deepseek/deepseek-chat');
+          const defaultModel = mergedModels.find(m => m.id === 'deepseek/deepseek-chat') || mergedModels[0];
           if (defaultModel) {
             defaultModel.active = true;
             // Save this change to database if it's a user model
