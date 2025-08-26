@@ -59,8 +59,10 @@ export function DonationSection() {
                 <div className="inline-flex items-center justify-center mb-4 md:mb-0">
                 <QrCode className="h-6 w-6 text-orange-500 mr-2" />
                 <span className="text-lg font-semibold text-gray-900">Scan to Donate</span>
-              
-                <div className="relative inline-block">
+                </div>
+              </div>
+                
+              <div className="relative inline-block">
                 <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg border-2 border-orange-100">
                   <img 
                     src="/BTC.jpg" 
@@ -73,6 +75,7 @@ export function DonationSection() {
               <p className="text-sm text-gray-500 mt-4">
                 Scan with any Bitcoin wallet
               </p>
+            </div>
 
             {/* Address Section */}
             <div className="space-y-4 md:space-y-6 order-1 md:order-2">
@@ -99,7 +102,6 @@ export function DonationSection() {
                       )}
                     </button>
                   </div>
-                </div>
                 </div>
                 
                 {copied && (
