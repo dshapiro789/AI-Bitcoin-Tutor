@@ -68,7 +68,7 @@ Remember: You are here to educate about Bitcoin and its place in the broader fin
 // Default model configurations
 export const defaultModels: AIModel[] = [
   {
-    id: 'deepseek/deepseek-chat',
+    id: 'deepseek/deepseek-chat:online',
     name: 'DeepSeek V3',
     provider: 'OpenRouter',
     apiKeyRequired: false,
