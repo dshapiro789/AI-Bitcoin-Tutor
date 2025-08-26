@@ -761,7 +761,7 @@ function AiChat() {
                             </div>
                           )}
 
-                          {model.apiEndpoint && !isDefaultModel(model.id) && (
+                          {model.apiEndpoint && model.apiKeyRequired && (
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 API Endpoint
