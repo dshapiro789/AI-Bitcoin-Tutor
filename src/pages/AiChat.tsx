@@ -710,7 +710,7 @@ function AiChat() {
                           exit={{ opacity: 0, height: 0 }}
                           className="mt-4 space-y-4"
                         >
-                          {model.apiKeyRequired && (
+                          {model.apiKeyRequired && !isDefaultModel(model.id) && (
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 API Key
@@ -733,7 +733,7 @@ function AiChat() {
                             </div>
                           )}
 
-                          {model.apiEndpoint && (
+                          {model.apiEndpoint && !isDefaultModel(model.id) && (
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 API Endpoint
