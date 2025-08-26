@@ -80,7 +80,7 @@ export const defaultModels: AIModel[] = [
     maxTokens: 1000
   },
   {
-    id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
+    id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free:online',
     name: 'Venice AI',
     provider: 'OpenRouter',
     apiKeyRequired: false,
