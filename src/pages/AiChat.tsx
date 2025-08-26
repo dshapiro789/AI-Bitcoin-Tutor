@@ -655,7 +655,7 @@ function AiChat() {
                       <div className="flex items-center">
                         <Bot className="h-5 w-5 text-gray-500 mr-2" />
                         <h4 className="font-medium text-gray-900">{model.name}</h4>
-                        {!model.apiKeyRequired && (
+                        {isDefaultModel(model.id) && (
                           <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                             Default
                           </span>
