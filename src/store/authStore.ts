@@ -145,9 +145,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (error) {
         // If there's an error (like session_not_found), clear the invalid session
         if (error.message.includes('Invalid Refresh Token: Refresh Token Not Found')) {
-          console.debug('Session expired, clearing invalid session');
+          // Session expired - this is normal, silently clear it
         } else {
-          console.warn('Session restoration failed, clearing invalid session:', error);
+          console.debug('Session restoration failed, clearing invalid session:', error.message);
         }
         await supabase.auth.signOut();
         set({ user: null });
@@ -175,7 +175,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ user });
       }
     } catch (err) {
-      console.error('Error restoring session:', err);
+      // Only log unexpected errors, not authentication-related ones
+      if (err instanceof Error && !err.message.includes('Invalid Refresh Token')) {
+        console.error('Error restoring session:', err);
+      }
       // Clear any invalid session on unexpected errors
       try {
         await supabase.auth.signOut();
