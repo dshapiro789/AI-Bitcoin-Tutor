@@ -4,7 +4,7 @@ import { Heart, Copy, CheckCircle, QrCode } from 'lucide-react';
 
 export function DonationSection() {
   const [copied, setCopied] = useState(false);
-  const btcAddress = 'bc1qxftmkwmgn2uqqutgl0x5500xdycxrdlwetkh07';
+  const btcAddress = 'sp1qqdak9clmvgxtrvcf36uwr93gddwwsyt734tsyemtf4xseeatxjuuwqm95sd7cctpt4ratnyg48c3n05ug5d5zfewlhf5kkaqzwkapn9wds8uh2w6';
 
   const handleCopyAddress = async () => {
     try {
