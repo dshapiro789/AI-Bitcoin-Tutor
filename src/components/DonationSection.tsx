@@ -65,7 +65,7 @@ export function DonationSection() {
                 <div className="relative inline-block">
                 <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg border-2 border-orange-100">
                   <img 
-                    src="/BTC.jpg" 
+                    src="/BTC.png" 
                     alt="Bitcoin donation QR code" 
                     className="w-40 h-40 md:w-48 md:h-48 mx-auto"
                   />
